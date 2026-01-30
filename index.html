@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhantomBlog · EquinoxX</title>
+
+<style>
+/* ================= THEME ================= */
+:root{
+--bg:#050510;
+--bg2:#0b0b30;
+--card:rgba(255,255,255,0.06);
+--border:rgba(255,255,255,0.12);
+--text:#e5e7eb;
+--muted:#9ca3af;
+--accent:#00ffe0;
+--accent2:#7c7cff;
+}
+
+body.light{
+--bg:#f0f4ff;
+--bg2:#ffffff;
+--card:#ffffffcc;
+--border:#e5e7eb;
+--text:#0f172a;
+--muted:#475569;
+--accent:#60a5fa;
+--accent2:#22d3ee;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:"PingFang SC","Microsoft YaHei",Arial}
+html{scroll-behavior:smooth}
+
+body{
+background:radial-gradient(circle at top,var(--bg2),var(--bg) 70%);
+color:var(--text);
+overflow-x:hidden;
+transition:background 1s,color 1s;
+}
+
+canvas{position:fixed;inset:0;z-index:-2}
+
+/* ================= HEADER ================= */
+header{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+header h1{font-size:4rem;background:linear-gradient(90deg,var(--accent2),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header p{margin-top:1rem;color:var(--muted)}
+
+/* ================= NAVBAR ================= */
+nav{position:sticky;top:0;z-index:10;display:flex;justify-content:center;backdrop-filter:blur(20px);background:rgba(0,0,0,0.35);border-bottom:1px solid var(--border)}
+
+nav .bar{
+display:flex;
+gap:3rem;
+padding:1.3rem 4rem;
+border-radius:999px;
+background:rgba(255,255,255,0.06);
+}
+
+nav a{color:var(--text);text-decoration:none;position:relative;font-size:1.05rem}
+nav a::after{content:"";position:absolute;bottom:-6px;left:0;width:0;height:2px;background:var(--accent);transition:.3s}
+nav a:hover::after{width:100%}
+#themeBtn{cursor:pointer}
+
+/* ================= INTRO ================= */
+.intro{margin-top:5rem;margin-bottom:6rem;text-align:center;line-height:2}
+
+.avatar-wrapper{width:190px;height:190px;margin:auto;border-radius:50%;background:conic-gradient(var(--accent),var(--accent2),var(--accent));animation:spin 8s linear infinite;padding:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.avatar-inner{width:100%;height:100%;border-radius:50%;background:black;padding:4px}
+.avatar{width:100%;height:100%;border-radius:50%;object-fit:cover}
+
+.name{font-size:2.6rem;margin-top:1.5rem}
+.alias{color:var(--muted)}
+
+.tags span{display:inline-block;margin:.4rem;padding:.4rem .9rem;border-radius:999px;background:rgba(255,255,255,.1)}
+
+/* ================= SOCIAL ================= */
+.social a{display:inline-block;margin:.6rem;padding:.6rem 1.4rem;border-radius:999px;border:1px solid var(--border);color:var(--accent);text-decoration:none;position:relative;overflow:hidden}
+.social a::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,var(--accent),transparent);opacity:0;transition:.4s}
+.social a:hover::before{opacity:1}
+.social a:hover{box-shadow:0 0 20px var(--accent)}
+
+/* ================= CONTENT ================= */
+.container{max-width:1100px;margin:auto;padding:4rem 1rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:2rem;backdrop-filter:blur(20px);margin-bottom:2rem;transition:.4s}
+.card:hover{transform:translateY(-8px)}
+.post h2{background:linear-gradient(90deg,var(--accent2),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.meta{color:var(--muted);margin:.6rem 0}
+
+/* ================= GALLERY ================= */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.5rem}
+.gallery img{width:100%;border-radius:14px;padding:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));transition:.4s}
+.gallery img:hover{transform:scale(1.07);box-shadow:0 0 30px var(--accent)}
+
+footer{text-align:center;padding:3rem;color:var(--muted)}
+
+.reveal{opacity:0;transform:translateY(60px);transition:1s}
+.reveal.active{opacity:1;transform:none}
+
+/* ================= MOBILE ================= */
+body.mobile header h1{font-size:2.8rem}
+body.mobile nav .bar{gap:1.2rem;padding:1rem 1.5rem}
+body.mobile .name{font-size:2.1rem}
+
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<header id="home">
+<h1>PhantomBlog</h1>
+<p>EquinoxX自己设计的博客喵~</p>
+</header>
+
+<nav>
+<div class="bar">
+<a href="#home">首页</a>
+<a href="#about">关于</a>
+<a href="#posts">文章</a>
+<a href="#gallery">画廊</a>
+<a href="#contact">联系</a>
+<span id="themeBtn">🌗</span>
+</div>
+</nav>
+
+<section id="about" class="intro reveal">
+<div class="avatar-wrapper"><div class="avatar-inner"><img class="avatar" src="avatar.jpg"></div></div>
+<h2 class="name">EquinoxX</h2>
+<div class="alias">曾用名：Bo1tLightning · Talismanity</div>
+<p>中国 · 辽宁 ｜ 打游戏 · 编程</p>
+
+<div class="tags"><span>Apex</span><span>COD</span><span>CODM</span><span>Deadlock</span><span>CS2</span></div>
+
+<div class="social">
+<a target="_blank" href="https://github.com/BoltLightningAlan">GitHub</a>
+<a target="_blank" href="https://space.bilibili.com/572435740">Bilibili</a>
+<a target="_blank" href="https://www.youtube.com/@Talismanity">YouTube</a>
+<a target="_blank" href="mailto:sunshaoxuan2019@163.com">Email</a>
+</div>
+
+<p id="visitInfo"></p>
+<p id="counter"></p>
+</section>
+
+<section id="posts" class="container"><div id="postList"></div></section>
+
+<section id="gallery" class="container reveal">
+<h2 style="margin-bottom:1.5rem">图片画廊</h2>
+<div class="gallery" id="galleryBox"></div>
+</section>
+
+<footer id="contact">© 2026 PhantomBlog</footer>
+
+<script>
+/* ===== Device Detect ===== */
+if(/Mobi|Android|iPhone/i.test(navigator.userAgent)){
+document.body.classList.add('mobile');
+}else{document.body.classList.add('desktop');}
+
+/* ===== Fancy Particle Galaxy ===== */
+const c=document.getElementById('bg');
+const ctx=c.getContext('2d');
+let w,h,stars=[];
+function resize(){w=c.width=innerWidth;h=c.height=innerHeight}
+window.onresize=resize;resize();
+
+for(let i=0;i<400;i++){
+stars.push({
+a:Math.random()*Math.PI*2,
+r:Math.random()*Math.min(w,h)/2,
+s:Math.random()*0.002+0.001,
+size:Math.random()*2+0.5,
+alpha:Math.random()
+});}
+
+function draw(){
+ctx.clearRect(0,0,w,h);
+const light=document.body.classList.contains('light');
+stars.forEach(s=>{
+s.a+=s.s;
+const x=w/2+Math.cos(s.a)*s.r;
+const y=h/2+Math.sin(s.a)*s.r;
+ctx.fillStyle=light?
+`rgba(120,180,255,${s.alpha})`:
+`rgba(255,255,255,${s.alpha})`;
+ctx.beginPath();
+ctx.arc(x,y,s.size,0,Math.PI*2);
+ctx.fill();
+});
+requestAnimationFrame(draw);
+}
+draw();
+
+/* ===== Reveal ===== */
+const reveals=document.querySelectorAll('.reveal');
+function reveal(){reveals.forEach(el=>{if(el.getBoundingClientRect().top<innerHeight-100)el.classList.add('active')})}
+window.addEventListener('scroll',reveal);reveal();
+
+/* ===== Theme ===== */
+document.getElementById('themeBtn').onclick=()=>{
+document.body.classList.toggle('light');
+}
+
+/* ===== Counter ===== */
+let v=localStorage.getItem('visit')||0;
+v++;localStorage.setItem('visit',v);
+document.getElementById('counter').innerText=`访问次数：${v}`;
+
+/* ===== Visit Info ===== */
+document.getElementById('visitInfo').innerText=
+`设备信息：${navigator.userAgent}\n分辨率：${screen.width}x${screen.height}`;
+
+/* ===== Load Posts ===== */
+fetch('posts.json').then(r=>r.json()).then(list=>{
+const box=document.getElementById('postList');
+list.forEach(p=>{
+box.innerHTML+=`
+<article class="card reveal">
+<h2>${p.title}</h2>
+<div class="meta">${p.date} · ${p.category}</div>
+<p>${p.desc}</p>
+</article>`;
+});
+reveal();
+});
+
+/* ===== Load Gallery ===== */
+const g=document.getElementById('galleryBox');
+for(let i=1;i<=60;i++){
+const img=new Image();
+img.src=`pic/${i}.jpg`;
+img.onload=()=>g.appendChild(img);
+}
+</script>
+
+</body>
+</html>
