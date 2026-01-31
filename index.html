@@ -4,25 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PhantomBlog · EquinoxX</title>
-<!-- 引入字体提升质感 -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+<!-- 引入图标库增强视觉 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ================= 全局重置 & 基础变量 ================= */
 :root {
-  /* 暗黑模式（主色调：冷调深蓝+青蓝渐变，高级感拉满） */
-  --bg-primary: #0a0e17;
-  --bg-secondary: #111827;
+  /* 暗黑模式（高级赛博朋克色调） */
+  --bg-primary: #050816;
+  --bg-secondary: #0d111f;
   --bg-card: rgba(17, 25, 40, 0.85);
-  --bg-nav: rgba(17, 25, 40, 0.9);
+  --bg-nav: rgba(17, 25, 40, 0.95);
   --border-light: rgba(129, 140, 163, 0.15);
   --text-primary: #f9fafb;
   --text-muted: #94a3b8;
   --accent-primary: #22d3ee;
   --accent-secondary: #6366f1;
-  --accent-gradient: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+  --accent-tertiary: #d946ef;
+  --accent-gradient: linear-gradient(135deg, var(--accent-tertiary), var(--accent-secondary), var(--accent-primary));
+  --accent-gradient-short: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 30px rgba(34, 211, 238, 0.25);
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
@@ -30,19 +34,22 @@
   --transition-fast: 0.2s ease;
   --transition-normal: 0.4s ease;
   --transition-slow: 0.8s ease;
+  --transition-elastic: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 body.light {
-  /* 亮色模式（柔和浅蓝+清新青调，无刺眼白） */
+  /* 亮色模式（柔和清新色调） */
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --bg-card: rgba(255, 255, 255, 0.9);
-  --bg-nav: rgba(255, 255, 255, 0.95);
+  --bg-nav: rgba(255, 255, 255, 0.98);
   --border-light: rgba(148, 163, 184, 0.2);
   --text-primary: #0f172a;
   --text-muted: #64748b;
   --accent-primary: #3b82f6;
   --accent-secondary: #06b6d4;
+  --accent-tertiary: #8b5cf6;
+  --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.25);
 }
 
 * {
@@ -54,7 +61,7 @@ body.light {
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 80px; /* 适配粘性导航 */
+  scroll-padding-top: 72px; /* 精准适配导航栏高度，修复锚点定位 */
 }
 
 body {
@@ -65,24 +72,35 @@ body {
   transition: all var(--transition-normal);
 }
 
-/* 粒子画布层级 & 性能优化 */
+/* ================= 粒子画布增强 ================= */
 canvas#bg {
   position: fixed;
   inset: 0;
   z-index: -2;
-  pointer-events: none; /* 不阻挡交互 */
+  pointer-events: none;
+  filter: blur(0.5px); /* 粒子柔化，更高级 */
 }
 
-/* ================= 导航栏（桌面+移动端） ================= */
+/* ================= 导航栏重构（极致美观） ================= */
 nav {
   position: sticky;
   top: 0;
   z-index: 999;
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
   background: var(--bg-nav);
   border-bottom: 1px solid var(--border-light);
   padding: 0 2rem;
   box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+/* 导航栏滚动动效 */
+nav.scrolled {
+  background: rgba(17, 25, 40, 0.98);
+  box-shadow: var(--shadow-md);
+}
+body.light nav.scrolled {
+  background: rgba(255, 255, 255, 0.99);
 }
 
 .nav-container {
@@ -94,7 +112,36 @@ nav {
   height: 72px;
 }
 
-/* 桌面端导航链接 */
+/* 博客Logo */
+.logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo i {
+  font-size: 1.4rem;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+/* 桌面端导航链接（增强动效） */
+.nav-links-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
 .nav-links {
   display: flex;
   gap: 2.5rem;
@@ -108,12 +155,27 @@ nav {
   position: relative;
   padding: 0.5rem 0;
   transition: color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.nav-links a i {
+  opacity: 0;
+  transform: translateX(-5px);
+  transition: all var(--transition-fast);
 }
 
 .nav-links a:hover {
   color: var(--accent-primary);
 }
 
+.nav-links a:hover i {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* 导航链接下划线增强 */
 .nav-links a::after {
   content: "";
   position: absolute;
@@ -121,7 +183,7 @@ nav {
   left: 0;
   width: 0;
   height: 2px;
-  background: var(--accent-gradient);
+  background: var(--accent-gradient-short);
   border-radius: var(--radius-sm);
   transition: width var(--transition-normal);
 }
@@ -130,40 +192,52 @@ nav {
   width: 100%;
 }
 
-/* 主题切换按钮 */
+/* 主题切换按钮增强 */
 #themeBtn {
   cursor: pointer;
   font-size: 1.2rem;
-  background: transparent;
-  border: none;
+  background: rgba(129, 140, 163, 0.08);
+  border: 1px solid var(--border-light);
   color: var(--text-primary);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #themeBtn:hover {
-  background: rgba(129, 140, 163, 0.1);
+  background: rgba(129, 140, 163, 0.15);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
 }
 
-/* 移动端汉堡菜单 */
+/* 移动端汉堡菜单增强 */
 .hamburger {
   display: none;
   cursor: pointer;
   font-size: 1.5rem;
-  background: transparent;
-  border: none;
+  background: rgba(129, 140, 163, 0.08);
+  border: 1px solid var(--border-light);
   color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
 }
 
-/* 移动端折叠导航 */
+.hamburger:hover {
+  background: rgba(129, 140, 163, 0.15);
+}
+
+/* 移动端折叠导航增强 */
 .mobile-nav {
   position: fixed;
   top: 72px;
   left: 0;
   right: 0;
   background: var(--bg-nav);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--border-light);
   padding: 1.5rem 2rem;
   display: none;
@@ -171,13 +245,37 @@ nav {
   gap: 1.5rem;
   box-shadow: var(--shadow-md);
   z-index: 998;
+  transform: translateY(-20px);
+  opacity: 0;
+  transition: all var(--transition-elastic);
 }
 
 .mobile-nav.active {
   display: flex;
+  transform: translateY(0);
+  opacity: 1;
 }
 
-/* ================= 首页头部 ================= */
+.mobile-nav a {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid transparent;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mobile-nav a:hover {
+  color: var(--accent-primary);
+  border-bottom: 1px solid var(--border-light);
+  padding-left: 0.5rem;
+}
+
+/* ================= 首页头部增强 ================= */
 header#home {
   min-height: calc(100vh - 72px);
   display: flex;
@@ -186,42 +284,86 @@ header#home {
   align-items: center;
   text-align: center;
   padding: 2rem;
+  position: relative;
+}
+
+header#home::after {
+  content: "";
+  position: absolute;
+  bottom: 50px;
+  width: 60px;
+  height: 60px;
+  background: var(--accent-gradient);
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  z-index: -1;
 }
 
 header h1 {
-  font-size: clamp(2.8rem, 6vw, 5rem); /* 响应式字体 */
-  font-weight: 700;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 800;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 1.5rem;
   letter-spacing: -0.02em;
+  text-shadow: 0 0 30px rgba(34, 211, 238, 0.1);
+  animation: textGlow 3s infinite alternate;
+}
+
+@keyframes textGlow {
+  from { text-shadow: 0 0 30px rgba(34, 211, 238, 0.1); }
+  to { text-shadow: 0 0 40px rgba(34, 211, 238, 0.3); }
 }
 
 header p {
-  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-size: clamp(1rem, 2vw, 1.3rem);
   color: var(--text-muted);
   max-width: 600px;
+  position: relative;
+  padding: 1rem 2rem;
+  background: rgba(17, 25, 40, 0.3);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light);
 }
 
-/* ================= 关于我区域 ================= */
+body.light header p {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ================= 关于我区域增强 ================= */
 section#about.intro {
   max-width: 800px;
   margin: 8rem auto;
   padding: 0 2rem;
   text-align: center;
+  position: relative;
 }
 
-/* 头像容器（高级旋转渐变边框） */
+/* 头像容器超级增强 */
 .avatar-wrapper {
   width: clamp(150px, 20vw, 200px);
   height: clamp(150px, 20vw, 200px);
   margin: 0 auto 2rem;
   border-radius: 50%;
   background: var(--accent-gradient);
-  animation: spin 12s linear infinite;
+  animation: spin 15s linear infinite;
   padding: 4px;
-  box-shadow: 0 0 40px rgba(34, 211, 238, 0.15);
+  box-shadow: var(--shadow-glow);
+  position: relative;
+}
+
+.avatar-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  opacity: 0.2;
+  filter: blur(20px);
+  z-index: -1;
 }
 
 @keyframes spin {
@@ -241,26 +383,46 @@ section#about.intro {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  transition: transform var(--transition-normal);
+  transition: transform var(--transition-elastic);
 }
 
 .avatar-wrapper:hover .avatar {
-  transform: scale(1.02);
+  transform: scale(1.05) rotate(2deg);
 }
 
-/* 名字 & 别名 */
+/* 名字 & 别名增强 */
 .name {
-  font-size: clamp(1.8rem, 3vw, 2.5rem);
-  font-weight: 600;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  font-weight: 700;
   margin-bottom: 0.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.name::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent-gradient-short);
+  border-radius: var(--radius-sm);
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+section#about:hover .name::after {
+  transform: scaleX(1);
 }
 
 .alias {
   color: var(--text-muted);
   margin-bottom: 1.5rem;
+  font-style: italic;
 }
 
-/* 标签样式（高级胶囊） */
+/* 标签样式超级增强 */
 .tags {
   margin: 2rem 0;
   display: flex;
@@ -277,15 +439,34 @@ section#about.intro {
   color: var(--text-muted);
   font-size: 0.9rem;
   transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.tags span::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.1), transparent);
+  transition: left var(--transition-normal);
 }
 
 .tags span:hover {
   background: rgba(34, 211, 238, 0.1);
   color: var(--accent-primary);
   border-color: rgba(34, 211, 238, 0.2);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
-/* 社交链接（渐变按钮） */
+.tags span:hover::before {
+  left: 100%;
+}
+
+/* 社交链接增强（含Email弹窗触发） */
 .social {
   margin: 2.5rem 0;
   display: flex;
@@ -306,9 +487,12 @@ section#about.intro {
   position: relative;
   overflow: hidden;
   transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* 按钮渐变背景动画 */
+/* 按钮渐变背景动画增强 */
 .social a::before {
   content: "";
   position: absolute;
@@ -322,30 +506,45 @@ section#about.intro {
 .social a:hover {
   color: var(--text-primary);
   border-color: transparent;
-  box-shadow: 0 0 25px rgba(34, 211, 238, 0.2);
-  transform: translateY(-3px);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-3px) scale(1.02);
 }
 
 .social a:hover::before {
   opacity: 1;
 }
 
-/* 访问信息（弱化显示） */
+/* Email弹窗按钮特殊样式 */
+#emailBtn {
+  cursor: pointer;
+}
+
+/* 访问信息增强 */
 #visitInfo, #counter {
   font-size: 0.85rem;
   color: var(--text-muted);
   margin-top: 1rem;
   line-height: 1.5;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(17, 25, 40, 0.2);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
 }
 
-/* ================= 文章列表 ================= */
+body.light #visitInfo, 
+body.light #counter {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ================= 文章列表增强 ================= */
 section#posts.container {
   max-width: 1000px;
   margin: 8rem auto;
   padding: 0 2rem;
 }
 
-/* 文章卡片（高级毛玻璃） */
+/* 文章卡片超级增强（3D效果） */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
@@ -355,12 +554,30 @@ section#posts.container {
   margin-bottom: 2rem;
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--accent-gradient);
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
 }
 
 .card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-6px) rotateX(2deg) rotateY(2deg);
   box-shadow: var(--shadow-lg);
   border-color: rgba(34, 211, 238, 0.2);
+}
+
+.card:hover::before {
+  transform: scaleX(1);
 }
 
 .card h2 {
@@ -370,6 +587,11 @@ section#posts.container {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.8rem;
+  transition: all var(--transition-fast);
+}
+
+.card:hover h2 {
+  transform: translateX(5px);
 }
 
 .meta {
@@ -387,9 +609,15 @@ section#posts.container {
   height: 4px;
   border-radius: 50%;
   background: var(--accent-primary);
+  animation: pulseDot 2s infinite alternate;
 }
 
-/* ================= 图片画廊 ================= */
+@keyframes pulseDot {
+  from { transform: scale(1); }
+  to { transform: scale(1.5); }
+}
+
+/* ================= 图片画廊增强 ================= */
 section#gallery.container {
   max-width: 1200px;
   margin: 8rem auto;
@@ -397,15 +625,28 @@ section#gallery.container {
 }
 
 section#gallery h2 {
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 600;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 700;
   margin-bottom: 2rem;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  position: relative;
+  display: inline-block;
 }
 
-/* 画廊网格（响应式） */
+section#gallery h2::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60%;
+  height: 3px;
+  background: var(--accent-gradient-short);
+  border-radius: var(--radius-sm);
+}
+
+/* 画廊网格增强 */
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(clamp(180px, 20vw, 250px), 1fr));
@@ -419,16 +660,172 @@ section#gallery h2 {
   object-fit: cover;
   padding: 3px;
   background: var(--accent-gradient);
-  transition: all var(--transition-normal);
+  transition: all var(--transition-elastic);
   cursor: pointer;
+  position: relative;
+  z-index: 1;
 }
 
 .gallery img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 30px rgba(34, 211, 238, 0.2);
+  transform: scale(1.08) rotate(1deg);
+  box-shadow: var(--shadow-glow);
+  z-index: 2;
 }
 
-/* ================= 页脚 ================= */
+/* ================= Email炫酷弹窗 ================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-normal);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  width: 90%;
+  max-width: 450px;
+  text-align: center;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(20px) scale(0.95);
+  transition: all var(--transition-elastic);
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-overlay.active .modal {
+  transform: translateY(0) scale(1);
+}
+
+/* 弹窗装饰 */
+.modal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: var(--accent-gradient);
+}
+
+.modal::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: var(--accent-gradient);
+  opacity: 0.05;
+  border-radius: 50%;
+  filter: blur(50px);
+  z-index: -1;
+  animation: modalFloat 8s infinite ease-in-out;
+}
+
+@keyframes modalFloat {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-10%, -10%) rotate(5deg); }
+}
+
+.modal h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.modal .email-text {
+  font-size: 1.2rem;
+  font-weight: 500;
+  padding: 1.2rem;
+  background: rgba(17, 25, 40, 0.3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  margin: 1.5rem 0;
+  color: var(--accent-primary);
+  letter-spacing: 0.5px;
+}
+
+body.light .modal .email-text {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.modal .copy-btn {
+  padding: 0.8rem 2rem;
+  border-radius: var(--radius-full);
+  background: var(--accent-gradient);
+  border: none;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.modal .copy-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.modal .close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.modal .close-btn:hover {
+  color: var(--accent-primary);
+  background: rgba(129, 140, 163, 0.1);
+}
+
+.modal .copy-success {
+  color: #10b981;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  opacity: 0;
+  transition: all var(--transition-fast);
+}
+
+.modal .copy-success.active {
+  opacity: 1;
+}
+
+/* ================= 页脚增强 ================= */
 footer#contact {
   text-align: center;
   padding: 4rem 2rem;
@@ -438,23 +835,42 @@ footer#contact {
   margin-top: 8rem;
   background: rgba(17, 25, 40, 0.5);
   backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
 }
 
-/* ================= 渐显动画 ================= */
+footer#contact::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent-gradient);
+}
+
+footer#contact p {
+  position: relative;
+  z-index: 1;
+}
+
+/* ================= 渐显动画增强 ================= */
 .reveal {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(30px) scale(0.98);
   transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
 .reveal.active {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
-/* ================= 响应式断点（精细适配） ================= */
-/* 平板（768px以下） */
+/* ================= 响应式断点精细适配 ================= */
 @media (max-width: 768px) {
+  .nav-links-wrapper {
+    gap: 1.5rem;
+  }
   .nav-links {
     display: none;
   }
@@ -473,9 +889,18 @@ footer#contact {
   section#gallery.container {
     margin: 5rem auto;
   }
+  .modal {
+    padding: 2rem 1.5rem;
+  }
+  .modal h3 {
+    font-size: 1.5rem;
+  }
+  .modal .email-text {
+    font-size: 1.1rem;
+    padding: 1rem;
+  }
 }
 
-/* 手机（480px以下） */
 @media (max-width: 480px) {
   nav {
     padding: 0 1rem;
@@ -486,15 +911,24 @@ footer#contact {
   header#home {
     padding: 1rem;
   }
+  header h1 {
+    font-size: clamp(2.5rem, 7vw, 4rem);
+  }
   .card {
     padding: 1.5rem;
   }
   .gallery {
     gap: 1rem;
   }
+  #visitInfo, #counter {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    display: block;
+    margin: 0.5rem auto;
+  }
 }
 
-/* ================= 加载动画（可选） ================= */
+/* ================= 加载动画增强 ================= */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -509,25 +943,41 @@ body {
 <canvas id="bg"></canvas>
 
 <!-- 导航栏 -->
-<nav>
+<nav id="mainNav">
   <div class="nav-container">
-    <div class="nav-links">
-      <a href="#home">首页</a>
-      <a href="#about">关于</a>
-      <a href="#posts">文章</a>
-      <a href="#gallery">画廊</a>
-      <a href="#contact">联系</a>
+    <!-- Logo -->
+    <div class="logo">
+      <i class="fas fa-ghost"></i>
+      PhantomBlog
     </div>
-    <button id="themeBtn">🌗</button>
-    <button class="hamburger" id="hamburgerBtn">☰</button>
+    
+    <div class="nav-links-wrapper">
+      <!-- 桌面端导航链接 -->
+      <div class="nav-links">
+        <a href="#home"><i class="fas fa-home"></i> 首页</a>
+        <a href="#about"><i class="fas fa-user"></i> 关于</a>
+        <a href="#posts"><i class="fas fa-file-alt"></i> 文章</a>
+        <a href="#gallery"><i class="fas fa-images"></i> 画廊</a>
+        <a href="#contact"><i class="fas fa-envelope"></i> 联系</a>
+      </div>
+      
+      <!-- 主题切换按钮 -->
+      <button id="themeBtn"><i class="fas fa-moon"></i></button>
+    </div>
+    
+    <!-- 移动端汉堡菜单 -->
+    <button class="hamburger" id="hamburgerBtn">
+      <i class="fas fa-bars"></i>
+    </button>
   </div>
+  
   <!-- 移动端折叠导航 -->
   <div class="mobile-nav" id="mobileNav">
-    <a href="#home">首页</a>
-    <a href="#about">关于</a>
-    <a href="#posts">文章</a>
-    <a href="#gallery">画廊</a>
-    <a href="#contact">联系</a>
+    <a href="#home"><i class="fas fa-home"></i> 首页</a>
+    <a href="#about"><i class="fas fa-user"></i> 关于</a>
+    <a href="#posts"><i class="fas fa-file-alt"></i> 文章</a>
+    <a href="#gallery"><i class="fas fa-images"></i> 画廊</a>
+    <a href="#contact"><i class="fas fa-envelope"></i> 联系</a>
   </div>
 </nav>
 
@@ -557,10 +1007,10 @@ body {
   </div>
 
   <div class="social">
-    <a target="_blank" href="https://github.com/BoltLightningAlan">GitHub</a>
-    <a target="_blank" href="https://space.bilibili.com/572435740">Bilibili</a>
-    <a target="_blank" href="https://www.youtube.com/@Talismanity">YouTube</a>
-    <a target="_blank" href="mailto:sunshaoxuan2019@163.com">Email</a>
+    <a target="_blank" href="https://github.com/BoltLightningAlan"><i class="fab fa-github"></i> GitHub</a>
+    <a target="_blank" href="https://space.bilibili.com/572435740"><i class="fab fa-bilibili"></i> Bilibili</a>
+    <a target="_blank" href="https://www.youtube.com/@Talismanity"><i class="fab fa-youtube"></i> YouTube</a>
+    <a id="emailBtn"><i class="fas fa-envelope"></i> Email</a>
   </div>
 
   <p id="visitInfo"></p>
@@ -579,10 +1029,28 @@ body {
 </section>
 
 <!-- 页脚 -->
-<footer id="contact">© 2026 PhantomBlog · 极简高级设计</footer>
+<footer id="contact">
+  <p>© 2026 PhantomBlog · 极简高级设计</p>
+</footer>
+
+<!-- Email炫酷弹窗 -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal">
+    <button class="close-btn" id="closeModalBtn">
+      <i class="fas fa-times"></i>
+    </button>
+    <h3>联系我</h3>
+    <p>我的邮箱地址：</p>
+    <div class="email-text" id="emailDisplay">sunshaoxuan2019@163.com</div>
+    <button class="copy-btn" id="copyEmailBtn">
+      <i class="fas fa-copy"></i> 复制邮箱
+    </button>
+    <div class="copy-success" id="copySuccess">已复制到剪贴板！</div>
+  </div>
+</div>
 
 <script>
-/* ===== 1. 超炫酷粒子背景（支持鼠标交互+渐变+连线） ===== */
+/* ===== 1. 超炫酷粒子背景（增强版：拖尾+更丝滑交互） ===== */
 class ParticleGalaxy {
   constructor() {
     this.canvas = document.getElementById('bg');
@@ -590,8 +1058,9 @@ class ParticleGalaxy {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.particles = [];
-    this.mouse = { x: null, y: null, radius: 150 }; // 鼠标感应范围
-    this.particleCount = this.isMobile() ? 150 : 400; // 移动端减少粒子数提升性能
+    this.mouse = { x: null, y: null, radius: 180 }; // 扩大感应范围
+    this.particleCount = this.isMobile() ? 200 : 500; // 增加粒子数量
+    this.trailLength = this.isMobile() ? 3 : 5; // 粒子拖尾长度
     this.init();
   }
 
@@ -609,28 +1078,40 @@ class ParticleGalaxy {
     this.animate();
   }
 
-  // 创建粒子（随机属性+渐变颜色）
+  // 创建粒子（增强：拖尾+更多渐变）
   createParticles() {
     this.particles = [];
     const isLight = document.body.classList.contains('light');
     for (let i = 0; i < this.particleCount; i++) {
-      const size = Math.random() * 1.5 + 0.2; // 粒子大小更细腻
+      const size = Math.random() * 2 + 0.3;
+      // 随机选择渐变颜色
+      const colorSet = isLight 
+        ? [
+            `rgba(${100 + Math.random() * 80}, ${150 + Math.random() * 80}, ${255}, ${0.6 + Math.random() * 0.4})`,
+            `rgba(${59 + Math.random() * 80}, ${130 + Math.random() * 80}, ${246}, ${0.6 + Math.random() * 0.4})`,
+            `rgba(${6 + Math.random() * 80}, ${182 + Math.random() * 80}, ${212}, ${0.6 + Math.random() * 0.4})`
+          ]
+        : [
+            `rgba(${34 + Math.random() * 50}, ${211 + Math.random() * 20}, ${238}, ${0.4 + Math.random() * 0.6})`,
+            `rgba(${99 + Math.random() * 50}, ${102 + Math.random() * 20}, ${241}, ${0.4 + Math.random() * 0.6})`,
+            `rgba(${217 + Math.random() * 30}, ${70 + Math.random() * 20}, ${239}, ${0.4 + Math.random() * 0.6})`
+          ];
+      
       this.particles.push({
         x: Math.random() * this.width,
         y: Math.random() * this.height,
         size,
-        speedX: (Math.random() - 0.5) * 0.3, // 速度放缓更丝滑
-        speedY: (Math.random() - 0.5) * 0.3,
-        color: isLight 
-          ? `rgba(${100 + Math.random() * 80}, ${150 + Math.random() * 80}, ${255}, ${0.6 + Math.random() * 0.4})`
-          : `rgba(${34 + Math.random() * 50}, ${211 + Math.random() * 20}, ${238}, ${0.4 + Math.random() * 0.6})`,
-        alpha: Math.random() * 0.8 + 0.2,
-        originalAlpha: Math.random() * 0.8 + 0.2
+        speedX: (Math.random() - 0.5) * 0.4, // 速度稍快更灵动
+        speedY: (Math.random() - 0.5) * 0.4,
+        color: colorSet[Math.floor(Math.random() * colorSet.length)],
+        alpha: Math.random() * 0.9 + 0.1,
+        originalAlpha: Math.random() * 0.9 + 0.1,
+        trail: [] // 粒子拖尾
       });
     }
   }
 
-  // 事件监听（窗口大小+鼠标+主题切换）
+  // 事件监听增强
   addEventListeners() {
     window.addEventListener('resize', () => {
       this.width = window.innerWidth;
@@ -640,7 +1121,7 @@ class ParticleGalaxy {
       this.createParticles();
     });
 
-    // 鼠标移动跟踪（移动端触摸适配）
+    // 鼠标/触摸跟踪增强
     if (this.isMobile()) {
       window.addEventListener('touchmove', (e) => {
         this.mouse.x = e.touches[0].clientX;
@@ -657,17 +1138,38 @@ class ParticleGalaxy {
       });
     }
 
-    // 主题切换时更新粒子颜色
+    // 主题切换更新粒子
     document.getElementById('themeBtn').addEventListener('click', () => {
       this.createParticles();
     });
   }
 
-  // 绘制粒子和连线
+  // 绘制粒子（增强：拖尾+更自然的交互）
   draw() {
-    this.ctx.clearRect(0, 0, this.width, this.height);
+    // 半透明清除画布，实现拖尾效果
+    this.ctx.fillStyle = document.body.classList.contains('light') 
+      ? 'rgba(248, 250, 252, 0.05)' 
+      : 'rgba(10, 14, 23, 0.05)';
+    this.ctx.fillRect(0, 0, this.width, this.height);
+
     this.particles.forEach((particle, index) => {
-      // 绘制粒子
+      // 更新拖尾
+      particle.trail.push({ x: particle.x, y: particle.y });
+      if (particle.trail.length > this.trailLength) {
+        particle.trail.shift();
+      }
+
+      // 绘制拖尾
+      this.ctx.beginPath();
+      this.ctx.moveTo(particle.trail[0].x, particle.trail[0].y);
+      for (let i = 1; i < particle.trail.length; i++) {
+        this.ctx.lineTo(particle.trail[i].x, particle.trail[i].y);
+      }
+      this.ctx.strokeStyle = particle.color.replace(/[^,]+(?=\))/, particle.alpha * 0.3);
+      this.ctx.lineWidth = particle.size * 0.5;
+      this.ctx.stroke();
+
+      // 绘制粒子本体
       this.ctx.beginPath();
       this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
       this.ctx.fillStyle = particle.color.replace(/[^,]+(?=\))/, particle.alpha);
@@ -677,38 +1179,68 @@ class ParticleGalaxy {
       particle.x += particle.speedX;
       particle.y += particle.speedY;
 
-      // 边界回弹
-      if (particle.x < 0 || particle.x > this.width) particle.speedX *= -1;
-      if (particle.y < 0 || particle.y > this.height) particle.speedY *= -1;
+      // 边界回弹（更自然）
+      if (particle.x < 0) {
+        particle.x = this.width;
+        particle.trail = [];
+      } else if (particle.x > this.width) {
+        particle.x = 0;
+        particle.trail = [];
+      }
+      if (particle.y < 0) {
+        particle.y = this.height;
+        particle.trail = [];
+      } else if (particle.y > this.height) {
+        particle.y = 0;
+        particle.trail = [];
+      }
 
-      // 鼠标交互：粒子靠近鼠标时放大+变亮
+      // 鼠标交互增强
       if (this.mouse.x && this.mouse.y) {
         const dx = this.mouse.x - particle.x;
         const dy = this.mouse.y - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // 粒子缩放
+        // 粒子吸引效果
         if (distance < this.mouse.radius) {
+          const forceDirectionX = dx / distance;
+          const forceDirectionY = dy / distance;
+          const force = (this.mouse.radius - distance) / this.mouse.radius;
+          
+          particle.speedX += forceDirectionX * force * 0.05;
+          particle.speedY += forceDirectionY * force * 0.05;
+          
+          // 粒子缩放+变亮
           const scale = 1 + (this.mouse.radius - distance) / this.mouse.radius;
-          particle.size = Math.random() * 1.5 * scale + 0.2;
+          particle.size = Math.random() * 2 * scale + 0.3;
           particle.alpha = particle.originalAlpha * scale;
         } else {
-          particle.size = Math.random() * 1.5 + 0.2;
+          // 恢复原速度和大小
+          particle.speedX *= 0.98; // 阻尼效果
+          particle.speedY *= 0.98;
+          particle.size = Math.random() * 2 + 0.3;
           particle.alpha = particle.originalAlpha;
         }
 
-        // 粒子连线（仅鼠标附近）
-        if (distance < this.mouse.radius / 2) {
+        // 粒子连线增强（更密集）
+        if (distance < this.mouse.radius / 1.5) {
           this.particles.forEach((particle2, index2) => {
             if (index !== index2) {
               const dx2 = particle.x - particle2.x;
               const dy2 = particle.y - particle2.y;
               const distance2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-              if (distance2 < 80) { // 连线最大距离
-                const opacity = 1 - (distance2 / 80);
+              if (distance2 < 100) {
+                const opacity = 1 - (distance2 / 100);
+                const gradient = this.ctx.createLinearGradient(
+                  particle.x, particle.y,
+                  particle2.x, particle2.y
+                );
+                gradient.addColorStop(0, particle.color.replace(/[^,]+(?=\))/, opacity * 0.2));
+                gradient.addColorStop(1, particle2.color.replace(/[^,]+(?=\))/, opacity * 0.2));
+                
                 this.ctx.beginPath();
-                this.ctx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.2})`;
-                this.ctx.lineWidth = 0.5;
+                this.ctx.strokeStyle = gradient;
+                this.ctx.lineWidth = 0.6;
                 this.ctx.moveTo(particle.x, particle.y);
                 this.ctx.lineTo(particle2.x, particle2.y);
                 this.ctx.stroke();
@@ -720,22 +1252,29 @@ class ParticleGalaxy {
     });
   }
 
-  // 动画循环（性能优化：requestAnimationFrame）
+  // 动画循环（性能优化）
   animate() {
     this.draw();
     requestAnimationFrame(() => this.animate());
   }
 }
 
-/* ===== 2. 移动端汉堡菜单交互 ===== */
+/* ===== 2. 移动端汉堡菜单增强 ===== */
 function initMobileNav() {
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const mobileNav = document.getElementById('mobileNav');
+  const hamburgerIcon = hamburgerBtn.querySelector('i');
   
   hamburgerBtn.addEventListener('click', () => {
     mobileNav.classList.toggle('active');
-    // 切换汉堡/关闭图标
-    hamburgerBtn.innerText = mobileNav.classList.contains('active') ? '✕' : '☰';
+    // 切换图标
+    if (mobileNav.classList.contains('active')) {
+      hamburgerIcon.classList.remove('fa-bars');
+      hamburgerIcon.classList.add('fa-times');
+    } else {
+      hamburgerIcon.classList.remove('fa-times');
+      hamburgerIcon.classList.add('fa-bars');
+    }
   });
 
   // 点击导航链接关闭菜单
@@ -743,12 +1282,13 @@ function initMobileNav() {
   mobileLinks.forEach(link => {
     link.addEventListener('click', () => {
       mobileNav.classList.remove('active');
-      hamburgerBtn.innerText = '☰';
+      hamburgerIcon.classList.remove('fa-times');
+      hamburgerIcon.classList.add('fa-bars');
     });
   });
 }
 
-/* ===== 3. 渐显动画 ===== */
+/* ===== 3. 渐显动画增强 ===== */
 function initRevealAnimation() {
   const reveals = document.querySelectorAll('.reveal');
   
@@ -756,8 +1296,8 @@ function initRevealAnimation() {
     reveals.forEach(el => {
       const windowHeight = window.innerHeight;
       const elementTop = el.getBoundingClientRect().top;
-      const elementVisible = 100; // 元素进入可视区域100px后显示
-      
+      const elementVisible = 80; // 更早触发
+    
       if (elementTop < windowHeight - elementVisible) {
         el.classList.add('active');
       }
@@ -768,25 +1308,51 @@ function initRevealAnimation() {
   reveal(); // 初始加载时执行一次
 }
 
-/* ===== 4. 主题切换 ===== */
+/* ===== 4. 主题切换增强 ===== */
 function initThemeToggle() {
   const themeBtn = document.getElementById('themeBtn');
+  const themeIcon = themeBtn.querySelector('i');
   
   // 读取本地存储的主题偏好
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') {
     document.body.classList.add('light');
+    themeIcon.classList.remove('fa-moon');
+    themeIcon.classList.add('fa-sun');
   }
 
   themeBtn.addEventListener('click', () => {
     document.body.classList.toggle('light');
-    // 保存主题偏好到本地存储
     const isLight = document.body.classList.contains('light');
+    
+    // 更新图标
+    if (isLight) {
+      themeIcon.classList.remove('fa-moon');
+      themeIcon.classList.add('fa-sun');
+    } else {
+      themeIcon.classList.remove('fa-sun');
+      themeIcon.classList.add('fa-moon');
+    }
+    
+    // 保存主题偏好
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
   });
 }
 
-/* ===== 5. 访问计数 ===== */
+/* ===== 5. 导航栏滚动动效 ===== */
+function initNavScrollEffect() {
+  const mainNav = document.getElementById('mainNav');
+  
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      mainNav.classList.add('scrolled');
+    } else {
+      mainNav.classList.remove('scrolled');
+    }
+  });
+}
+
+/* ===== 6. 访问计数 ===== */
 function initVisitCounter() {
   let visitCount = localStorage.getItem('visit') || 0;
   visitCount++;
@@ -794,11 +1360,10 @@ function initVisitCounter() {
   document.getElementById('counter').innerText = `访问次数：${visitCount}`;
 }
 
-/* ===== 6. 设备信息展示 ===== */
+/* ===== 7. 设备信息展示 ===== */
 function initVisitInfo() {
   const userAgent = navigator.userAgent;
   const screenRes = `${screen.width}x${screen.height}`;
-  // 简化UA显示（移动端只显示核心信息）
   const simplifiedUA = /Mobi|Android|iPhone/i.test(userAgent) 
     ? userAgent.match(/(iPhone|Android|iPad|iOS|Mobile)/)[0] + ' 设备'
     : '桌面端设备';
@@ -807,9 +1372,8 @@ function initVisitInfo() {
     `设备类型：${simplifiedUA} · 分辨率：${screenRes}`;
 }
 
-/* ===== 7. 加载文章列表 ===== */
+/* ===== 8. 加载文章列表 ===== */
 function loadPosts() {
-  // 模拟posts.json数据（如果有真实文件可替换为fetch）
   const mockPosts = [
     { title: '我的编程学习之路', date: '2026-01-15', category: '编程', desc: '从零基础到独立开发博客，分享我的学习经验和踩坑记录。' },
     { title: 'Apex英雄身法教学', date: '2026-01-10', category: '游戏', desc: '详细讲解Apex中的滑铲、超级跳、身法连招，新手也能快速上手。' },
@@ -817,30 +1381,26 @@ function loadPosts() {
   ];
 
   const box = document.getElementById('postList');
-  // 如果有真实的posts.json，替换为下面的fetch代码：
-  // fetch('posts.json').then(r => r.json()).then(list => {
-    mockPosts.forEach(p => {
-      box.innerHTML += `
-        <article class="card reveal">
-          <h2>${p.title}</h2>
-          <div class="meta">${p.date} · ${p.category}</div>
-          <p>${p.desc}</p>
-        </article>`;
-    });
-    initRevealAnimation(); // 重新触发渐显动画
-  // });
+  mockPosts.forEach(p => {
+    box.innerHTML += `
+      <article class="card reveal">
+        <h2>${p.title}</h2>
+        <div class="meta">${p.date} · ${p.category}</div>
+        <p>${p.desc}</p>
+      </article>`;
+  });
+  initRevealAnimation();
 }
 
-/* ===== 8. 加载画廊图片 ===== */
+/* ===== 9. 加载画廊图片 ===== */
 function loadGallery() {
   const galleryBox = document.getElementById('galleryBox');
-  const imgCount = isMobile() ? 30 : 60; // 移动端减少图片数提升加载速度
+  const imgCount = isMobile() ? 30 : 60;
   
   for (let i = 1; i <= imgCount; i++) {
     const img = new Image();
     img.src = `pic/${i}.jpg`;
     img.alt = `画廊图片 ${i}`;
-    // 图片加载失败时显示占位图
     img.onerror = () => {
       img.src = 'https://picsum.photos/250/250?random=' + i;
     };
@@ -850,6 +1410,66 @@ function loadGallery() {
   }
 }
 
+/* ===== 10. Email炫酷弹窗功能 ===== */
+function initEmailModal() {
+  const emailBtn = document.getElementById('emailBtn');
+  const emailModal = document.getElementById('emailModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const copyEmailBtn = document.getElementById('copyEmailBtn');
+  const emailDisplay = document.getElementById('emailDisplay');
+  const copySuccess = document.getElementById('copySuccess');
+  
+  // 打开弹窗
+  emailBtn.addEventListener('click', () => {
+    emailModal.classList.add('active');
+    // 禁止背景滚动
+    document.body.style.overflow = 'hidden';
+  });
+  
+  // 关闭弹窗
+  function closeModal() {
+    emailModal.classList.remove('active');
+    document.body.style.overflow = '';
+    // 重置复制提示
+    copySuccess.classList.remove('active');
+  }
+  
+  closeModalBtn.addEventListener('click', closeModal);
+  
+  // 点击弹窗外部关闭
+  emailModal.addEventListener('click', (e) => {
+    if (e.target === emailModal) {
+      closeModal();
+    }
+  });
+  
+  // ESC键关闭
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && emailModal.classList.contains('active')) {
+      closeModal();
+    }
+  });
+  
+  // 复制邮箱功能
+  copyEmailBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(emailDisplay.textContent);
+      copySuccess.classList.add('active');
+      // 2秒后隐藏提示
+      setTimeout(() => {
+        copySuccess.classList.remove('active');
+      }, 2000);
+    } catch (err) {
+      copySuccess.textContent = '复制失败，请手动复制！';
+      copySuccess.classList.add('active');
+      setTimeout(() => {
+        copySuccess.textContent = '已复制到剪贴板！';
+        copySuccess.classList.remove('active');
+      }, 2000);
+    }
+  });
+}
+
 /* ===== 工具函数：检测移动端 ===== */
 function isMobile() {
   return /Mobi|Android|iPhone/i.test(navigator.userAgent);
@@ -857,14 +1477,16 @@ function isMobile() {
 
 /* ===== 初始化所有功能 ===== */
 window.addEventListener('DOMContentLoaded', () => {
-  new ParticleGalaxy(); // 初始化粒子背景
-  initMobileNav();      // 初始化移动端导航
-  initRevealAnimation();// 初始化渐显动画
-  initThemeToggle();    // 初始化主题切换
-  initVisitCounter();   // 初始化访问计数
-  initVisitInfo();      // 初始化设备信息
-  loadPosts();          // 加载文章列表
-  loadGallery();        // 加载画廊图片
+  new ParticleGalaxy();       // 粒子背景
+  initMobileNav();            // 移动端导航
+  initRevealAnimation();      // 渐显动画
+  initThemeToggle();          // 主题切换
+  initNavScrollEffect();      // 导航滚动动效
+  initVisitCounter();         // 访问计数
+  initVisitInfo();            // 设备信息
+  loadPosts();                // 加载文章
+  loadGallery();              // 加载画廊
+  initEmailModal();           // Email弹窗
 });
 </script>
 </body>
