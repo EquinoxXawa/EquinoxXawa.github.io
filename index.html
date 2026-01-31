@@ -5,12 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PhantomBlog · EquinoxX</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
-<!-- 引入图标库增强视觉 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ================= 全局重置 & 基础变量 ================= */
 :root {
-  /* 暗黑模式（高级赛博朋克色调） */
   --bg-primary: #050816;
   --bg-secondary: #0d111f;
   --bg-card: rgba(17, 25, 40, 0.85);
@@ -38,7 +36,6 @@
 }
 
 body.light {
-  /* 亮色模式（柔和清新色调） */
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --bg-card: rgba(255, 255, 255, 0.9);
@@ -61,7 +58,7 @@ body.light {
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 72px; /* 精准适配导航栏高度，修复锚点定位 */
+  scroll-padding-top: 72px; /* 精准适配导航栏高度 */
 }
 
 body {
@@ -72,16 +69,15 @@ body {
   transition: all var(--transition-normal);
 }
 
-/* ================= 粒子画布增强 ================= */
 canvas#bg {
   position: fixed;
   inset: 0;
   z-index: -2;
   pointer-events: none;
-  filter: blur(0.5px); /* 粒子柔化，更高级 */
+  filter: blur(0.5px);
 }
 
-/* ================= 导航栏重构（极致美观） ================= */
+/* ================= 导航栏 ================= */
 nav {
   position: sticky;
   top: 0;
@@ -94,7 +90,6 @@ nav {
   transition: all var(--transition-fast);
 }
 
-/* 导航栏滚动动效 */
 nav.scrolled {
   background: rgba(17, 25, 40, 0.98);
   box-shadow: var(--shadow-md);
@@ -112,7 +107,6 @@ body.light nav.scrolled {
   height: 72px;
 }
 
-/* 博客Logo */
 .logo {
   font-size: 1.25rem;
   font-weight: 700;
@@ -135,7 +129,6 @@ body.light nav.scrolled {
   50% { transform: scale(1.1); opacity: 0.8; }
 }
 
-/* 桌面端导航链接（增强动效） */
 .nav-links-wrapper {
   display: flex;
   align-items: center;
@@ -175,7 +168,6 @@ body.light nav.scrolled {
   transform: translateX(0);
 }
 
-/* 导航链接下划线增强 */
 .nav-links a::after {
   content: "";
   position: absolute;
@@ -192,7 +184,6 @@ body.light nav.scrolled {
   width: 100%;
 }
 
-/* 主题切换按钮增强 */
 #themeBtn {
   cursor: pointer;
   font-size: 1.2rem;
@@ -213,7 +204,6 @@ body.light nav.scrolled {
   transform: translateY(-1px);
 }
 
-/* 移动端汉堡菜单增强 */
 .hamburger {
   display: none;
   cursor: pointer;
@@ -230,7 +220,6 @@ body.light nav.scrolled {
   background: rgba(129, 140, 163, 0.15);
 }
 
-/* 移动端折叠导航增强 */
 .mobile-nav {
   position: fixed;
   top: 72px;
@@ -275,7 +264,7 @@ body.light nav.scrolled {
   padding-left: 0.5rem;
 }
 
-/* ================= 首页头部增强 ================= */
+/* ================= 首页头部 ================= */
 header#home {
   min-height: calc(100vh - 72px);
   display: flex;
@@ -333,7 +322,7 @@ body.light header p {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* ================= 关于我区域增强 ================= */
+/* ================= 关于我区域 ================= */
 section#about.intro {
   max-width: 800px;
   margin: 8rem auto;
@@ -342,7 +331,6 @@ section#about.intro {
   position: relative;
 }
 
-/* 头像容器超级增强 */
 .avatar-wrapper {
   width: clamp(150px, 20vw, 200px);
   height: clamp(150px, 20vw, 200px);
@@ -390,7 +378,6 @@ section#about.intro {
   transform: scale(1.05) rotate(2deg);
 }
 
-/* 名字 & 别名增强 */
 .name {
   font-size: clamp(1.8rem, 3vw, 2.8rem);
   font-weight: 700;
@@ -422,7 +409,6 @@ section#about:hover .name::after {
   font-style: italic;
 }
 
-/* 标签样式超级增强 */
 .tags {
   margin: 2rem 0;
   display: flex;
@@ -466,7 +452,6 @@ section#about:hover .name::after {
   left: 100%;
 }
 
-/* 社交链接增强（含Email弹窗触发） */
 .social {
   margin: 2.5rem 0;
   display: flex;
@@ -492,7 +477,6 @@ section#about:hover .name::after {
   gap: 0.5rem;
 }
 
-/* 按钮渐变背景动画增强 */
 .social a::before {
   content: "";
   position: absolute;
@@ -514,37 +498,17 @@ section#about:hover .name::after {
   opacity: 1;
 }
 
-/* Email弹窗按钮特殊样式 */
 #emailBtn {
   cursor: pointer;
 }
 
-/* 访问信息增强 */
-#visitInfo, #counter {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-top: 1rem;
-  line-height: 1.5;
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  background: rgba(17, 25, 40, 0.2);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border-light);
-}
-
-body.light #visitInfo, 
-body.light #counter {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* ================= 文章列表增强 ================= */
+/* ================= 文章列表 ================= */
 section#posts.container {
   max-width: 1000px;
   margin: 8rem auto;
   padding: 0 2rem;
 }
 
-/* 文章卡片超级增强（3D效果） */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
@@ -617,7 +581,7 @@ section#posts.container {
   to { transform: scale(1.5); }
 }
 
-/* ================= 图片画廊增强 ================= */
+/* ================= 图片画廊 ================= */
 section#gallery.container {
   max-width: 1200px;
   margin: 8rem auto;
@@ -646,7 +610,7 @@ section#gallery h2::after {
   border-radius: var(--radius-sm);
 }
 
-/* 画廊网格增强 */
+/* 桌面端画廊样式 */
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(clamp(180px, 20vw, 250px), 1fr));
@@ -672,7 +636,7 @@ section#gallery h2::after {
   z-index: 2;
 }
 
-/* ================= Email炫酷弹窗 ================= */
+/* ================= Email弹窗 ================= */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -712,7 +676,6 @@ section#gallery h2::after {
   transform: translateY(0) scale(1);
 }
 
-/* 弹窗装饰 */
 .modal::before {
   content: "";
   position: absolute;
@@ -825,7 +788,7 @@ body.light .modal .email-text {
   opacity: 1;
 }
 
-/* ================= 页脚增强 ================= */
+/* ================= 页脚 ================= */
 footer#contact {
   text-align: center;
   padding: 4rem 2rem;
@@ -854,7 +817,7 @@ footer#contact p {
   z-index: 1;
 }
 
-/* ================= 渐显动画增强 ================= */
+/* ================= 渐显动画 ================= */
 .reveal {
   opacity: 0;
   transform: translateY(30px) scale(0.98);
@@ -866,7 +829,8 @@ footer#contact p {
   transform: translateY(0) scale(1);
 }
 
-/* ================= 响应式断点精细适配 ================= */
+/* ================= 响应式适配 ================= */
+/* 平板（768px以下） */
 @media (max-width: 768px) {
   .nav-links-wrapper {
     gap: 1.5rem;
@@ -899,8 +863,14 @@ footer#contact p {
     font-size: 1.1rem;
     padding: 1rem;
   }
+  /* 平板端画廊图片缩小 */
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(clamp(140px, 18vw, 200px), 1fr));
+    gap: 1rem;
+  }
 }
 
+/* 手机（480px以下）- 重点：画廊图片大幅缩小 */
 @media (max-width: 480px) {
   nav {
     padding: 0 1rem;
@@ -917,18 +887,17 @@ footer#contact p {
   .card {
     padding: 1.5rem;
   }
+  /* 手机端画廊图片更小 */
   .gallery {
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(100px, 15vw, 150px), 1fr));
+    gap: 0.8rem;
   }
-  #visitInfo, #counter {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-    display: block;
-    margin: 0.5rem auto;
+  /* 手机端画廊图片hover效果弱化（避免占屏） */
+  .gallery img:hover {
+    transform: scale(1.03) rotate(0.5deg);
   }
 }
 
-/* ================= 加载动画增强 ================= */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -945,14 +914,12 @@ body {
 <!-- 导航栏 -->
 <nav id="mainNav">
   <div class="nav-container">
-    <!-- Logo -->
     <div class="logo">
       <i class="fas fa-ghost"></i>
       PhantomBlog
     </div>
     
     <div class="nav-links-wrapper">
-      <!-- 桌面端导航链接 -->
       <div class="nav-links">
         <a href="#home"><i class="fas fa-home"></i> 首页</a>
         <a href="#about"><i class="fas fa-user"></i> 关于</a>
@@ -961,17 +928,14 @@ body {
         <a href="#contact"><i class="fas fa-envelope"></i> 联系</a>
       </div>
       
-      <!-- 主题切换按钮 -->
       <button id="themeBtn"><i class="fas fa-moon"></i></button>
     </div>
     
-    <!-- 移动端汉堡菜单 -->
     <button class="hamburger" id="hamburgerBtn">
       <i class="fas fa-bars"></i>
     </button>
   </div>
   
-  <!-- 移动端折叠导航 -->
   <div class="mobile-nav" id="mobileNav">
     <a href="#home"><i class="fas fa-home"></i> 首页</a>
     <a href="#about"><i class="fas fa-user"></i> 关于</a>
@@ -1012,9 +976,6 @@ body {
     <a target="_blank" href="https://www.youtube.com/@Talismanity"><i class="fab fa-youtube"></i> YouTube</a>
     <a id="emailBtn"><i class="fas fa-envelope"></i> Email</a>
   </div>
-
-  <p id="visitInfo"></p>
-  <p id="counter"></p>
 </section>
 
 <!-- 文章列表 -->
@@ -1033,7 +994,7 @@ body {
   <p>© 2026 PhantomBlog · 极简高级设计</p>
 </footer>
 
-<!-- Email炫酷弹窗 -->
+<!-- Email弹窗 -->
 <div class="modal-overlay" id="emailModal">
   <div class="modal">
     <button class="close-btn" id="closeModalBtn">
@@ -1050,7 +1011,7 @@ body {
 </div>
 
 <script>
-/* ===== 1. 超炫酷粒子背景（增强版：拖尾+更丝滑交互） ===== */
+/* ===== 1. 粒子背景（修改：痕迹自动消失） ===== */
 class ParticleGalaxy {
   constructor() {
     this.canvas = document.getElementById('bg');
@@ -1058,18 +1019,16 @@ class ParticleGalaxy {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.particles = [];
-    this.mouse = { x: null, y: null, radius: 180 }; // 扩大感应范围
-    this.particleCount = this.isMobile() ? 200 : 500; // 增加粒子数量
-    this.trailLength = this.isMobile() ? 3 : 5; // 粒子拖尾长度
+    this.mouse = { x: null, y: null, radius: 180 };
+    this.particleCount = this.isMobile() ? 200 : 500;
+    this.trailMaxAge = 15; // 痕迹最大存活帧数（越小消失越快）
     this.init();
   }
 
-  // 检测移动端
   isMobile() {
     return /Mobi|Android|iPhone/i.test(navigator.userAgent);
   }
 
-  // 初始化画布和粒子
   init() {
     this.canvas.width = this.width;
     this.canvas.height = this.height;
@@ -1078,13 +1037,11 @@ class ParticleGalaxy {
     this.animate();
   }
 
-  // 创建粒子（增强：拖尾+更多渐变）
   createParticles() {
     this.particles = [];
     const isLight = document.body.classList.contains('light');
     for (let i = 0; i < this.particleCount; i++) {
       const size = Math.random() * 2 + 0.3;
-      // 随机选择渐变颜色
       const colorSet = isLight 
         ? [
             `rgba(${100 + Math.random() * 80}, ${150 + Math.random() * 80}, ${255}, ${0.6 + Math.random() * 0.4})`,
@@ -1101,17 +1058,16 @@ class ParticleGalaxy {
         x: Math.random() * this.width,
         y: Math.random() * this.height,
         size,
-        speedX: (Math.random() - 0.5) * 0.4, // 速度稍快更灵动
+        speedX: (Math.random() - 0.5) * 0.4,
         speedY: (Math.random() - 0.5) * 0.4,
         color: colorSet[Math.floor(Math.random() * colorSet.length)],
         alpha: Math.random() * 0.9 + 0.1,
         originalAlpha: Math.random() * 0.9 + 0.1,
-        trail: [] // 粒子拖尾
+        trail: [] // 痕迹数组，每个元素：{x,y,age}
       });
     }
   }
 
-  // 事件监听增强
   addEventListeners() {
     window.addEventListener('resize', () => {
       this.width = window.innerWidth;
@@ -1121,7 +1077,6 @@ class ParticleGalaxy {
       this.createParticles();
     });
 
-    // 鼠标/触摸跟踪增强
     if (this.isMobile()) {
       window.addEventListener('touchmove', (e) => {
         this.mouse.x = e.touches[0].clientX;
@@ -1138,36 +1093,47 @@ class ParticleGalaxy {
       });
     }
 
-    // 主题切换更新粒子
     document.getElementById('themeBtn').addEventListener('click', () => {
       this.createParticles();
     });
   }
 
-  // 绘制粒子（增强：拖尾+更自然的交互）
   draw() {
-    // 半透明清除画布，实现拖尾效果
+    // 半透明背景覆盖，让痕迹自然淡化
     this.ctx.fillStyle = document.body.classList.contains('light') 
-      ? 'rgba(248, 250, 252, 0.05)' 
-      : 'rgba(10, 14, 23, 0.05)';
+      ? 'rgba(248, 250, 252, 0.1)' 
+      : 'rgba(10, 14, 23, 0.1)';
     this.ctx.fillRect(0, 0, this.width, this.height);
 
     this.particles.forEach((particle, index) => {
-      // 更新拖尾
-      particle.trail.push({ x: particle.x, y: particle.y });
-      if (particle.trail.length > this.trailLength) {
-        particle.trail.shift();
-      }
+      // 添加当前位置到痕迹，记录帧数
+      particle.trail.push({ 
+        x: particle.x, 
+        y: particle.y, 
+        age: 0 
+      });
 
-      // 绘制拖尾
-      this.ctx.beginPath();
-      this.ctx.moveTo(particle.trail[0].x, particle.trail[0].y);
-      for (let i = 1; i < particle.trail.length; i++) {
-        this.ctx.lineTo(particle.trail[i].x, particle.trail[i].y);
+      // 清理超过最大年龄的痕迹
+      particle.trail = particle.trail.filter(point => point.age < this.trailMaxAge);
+      // 所有痕迹年龄+1
+      particle.trail.forEach(point => point.age++);
+
+      // 绘制痕迹（从旧到新，透明度递减）
+      if (particle.trail.length > 1) {
+        for (let i = 0; i < particle.trail.length - 1; i++) {
+          const point1 = particle.trail[i];
+          const point2 = particle.trail[i + 1];
+          // 痕迹透明度随年龄降低
+          const trailAlpha = particle.alpha * (1 - point1.age / this.trailMaxAge) * 0.3;
+          
+          this.ctx.beginPath();
+          this.ctx.moveTo(point1.x, point1.y);
+          this.ctx.lineTo(point2.x, point2.y);
+          this.ctx.strokeStyle = particle.color.replace(/[^,]+(?=\))/, trailAlpha);
+          this.ctx.lineWidth = particle.size * 0.5 * (1 - point1.age / this.trailMaxAge);
+          this.ctx.stroke();
+        }
       }
-      this.ctx.strokeStyle = particle.color.replace(/[^,]+(?=\))/, particle.alpha * 0.3);
-      this.ctx.lineWidth = particle.size * 0.5;
-      this.ctx.stroke();
 
       // 绘制粒子本体
       this.ctx.beginPath();
@@ -1179,29 +1145,18 @@ class ParticleGalaxy {
       particle.x += particle.speedX;
       particle.y += particle.speedY;
 
-      // 边界回弹（更自然）
-      if (particle.x < 0) {
-        particle.x = this.width;
-        particle.trail = [];
-      } else if (particle.x > this.width) {
-        particle.x = 0;
-        particle.trail = [];
-      }
-      if (particle.y < 0) {
-        particle.y = this.height;
-        particle.trail = [];
-      } else if (particle.y > this.height) {
-        particle.y = 0;
-        particle.trail = [];
-      }
+      // 边界循环（替代回弹，更自然）
+      if (particle.x < 0) particle.x = this.width;
+      if (particle.x > this.width) particle.x = 0;
+      if (particle.y < 0) particle.y = this.height;
+      if (particle.y > this.height) particle.y = 0;
 
-      // 鼠标交互增强
+      // 鼠标交互
       if (this.mouse.x && this.mouse.y) {
         const dx = this.mouse.x - particle.x;
         const dy = this.mouse.y - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // 粒子吸引效果
         if (distance < this.mouse.radius) {
           const forceDirectionX = dx / distance;
           const forceDirectionY = dy / distance;
@@ -1210,19 +1165,18 @@ class ParticleGalaxy {
           particle.speedX += forceDirectionX * force * 0.05;
           particle.speedY += forceDirectionY * force * 0.05;
           
-          // 粒子缩放+变亮
           const scale = 1 + (this.mouse.radius - distance) / this.mouse.radius;
           particle.size = Math.random() * 2 * scale + 0.3;
           particle.alpha = particle.originalAlpha * scale;
         } else {
-          // 恢复原速度和大小
-          particle.speedX *= 0.98; // 阻尼效果
+          // 无交互时减速，回到初始状态
+          particle.speedX *= 0.98;
           particle.speedY *= 0.98;
           particle.size = Math.random() * 2 + 0.3;
           particle.alpha = particle.originalAlpha;
         }
 
-        // 粒子连线增强（更密集）
+        // 粒子连线（仅鼠标附近）
         if (distance < this.mouse.radius / 1.5) {
           this.particles.forEach((particle2, index2) => {
             if (index !== index2) {
@@ -1252,14 +1206,13 @@ class ParticleGalaxy {
     });
   }
 
-  // 动画循环（性能优化）
   animate() {
     this.draw();
     requestAnimationFrame(() => this.animate());
   }
 }
 
-/* ===== 2. 移动端汉堡菜单增强 ===== */
+/* ===== 2. 移动端导航 ===== */
 function initMobileNav() {
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const mobileNav = document.getElementById('mobileNav');
@@ -1267,7 +1220,6 @@ function initMobileNav() {
   
   hamburgerBtn.addEventListener('click', () => {
     mobileNav.classList.toggle('active');
-    // 切换图标
     if (mobileNav.classList.contains('active')) {
       hamburgerIcon.classList.remove('fa-bars');
       hamburgerIcon.classList.add('fa-times');
@@ -1277,7 +1229,6 @@ function initMobileNav() {
     }
   });
 
-  // 点击导航链接关闭菜单
   const mobileLinks = mobileNav.querySelectorAll('a');
   mobileLinks.forEach(link => {
     link.addEventListener('click', () => {
@@ -1288,7 +1239,7 @@ function initMobileNav() {
   });
 }
 
-/* ===== 3. 渐显动画增强 ===== */
+/* ===== 3. 渐显动画 ===== */
 function initRevealAnimation() {
   const reveals = document.querySelectorAll('.reveal');
   
@@ -1296,7 +1247,7 @@ function initRevealAnimation() {
     reveals.forEach(el => {
       const windowHeight = window.innerHeight;
       const elementTop = el.getBoundingClientRect().top;
-      const elementVisible = 80; // 更早触发
+      const elementVisible = 80;
     
       if (elementTop < windowHeight - elementVisible) {
         el.classList.add('active');
@@ -1305,15 +1256,14 @@ function initRevealAnimation() {
   }
 
   window.addEventListener('scroll', reveal);
-  reveal(); // 初始加载时执行一次
+  reveal();
 }
 
-/* ===== 4. 主题切换增强 ===== */
+/* ===== 4. 主题切换 ===== */
 function initThemeToggle() {
   const themeBtn = document.getElementById('themeBtn');
   const themeIcon = themeBtn.querySelector('i');
   
-  // 读取本地存储的主题偏好
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') {
     document.body.classList.add('light');
@@ -1325,7 +1275,6 @@ function initThemeToggle() {
     document.body.classList.toggle('light');
     const isLight = document.body.classList.contains('light');
     
-    // 更新图标
     if (isLight) {
       themeIcon.classList.remove('fa-moon');
       themeIcon.classList.add('fa-sun');
@@ -1334,12 +1283,11 @@ function initThemeToggle() {
       themeIcon.classList.add('fa-moon');
     }
     
-    // 保存主题偏好
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
   });
 }
 
-/* ===== 5. 导航栏滚动动效 ===== */
+/* ===== 5. 导航滚动动效 ===== */
 function initNavScrollEffect() {
   const mainNav = document.getElementById('mainNav');
   
@@ -1352,57 +1300,84 @@ function initNavScrollEffect() {
   });
 }
 
-/* ===== 6. 访问计数 ===== */
-function initVisitCounter() {
-  let visitCount = localStorage.getItem('visit') || 0;
-  visitCount++;
-  localStorage.setItem('visit', visitCount);
-  document.getElementById('counter').innerText = `访问次数：${visitCount}`;
-}
-
-/* ===== 7. 设备信息展示 ===== */
-function initVisitInfo() {
-  const userAgent = navigator.userAgent;
-  const screenRes = `${screen.width}x${screen.height}`;
-  const simplifiedUA = /Mobi|Android|iPhone/i.test(userAgent) 
-    ? userAgent.match(/(iPhone|Android|iPad|iOS|Mobile)/)[0] + ' 设备'
-    : '桌面端设备';
-  
-  document.getElementById('visitInfo').innerText = 
-    `设备类型：${simplifiedUA} · 分辨率：${screenRes}`;
-}
-
-/* ===== 8. 加载文章列表 ===== */
+/* ===== 6. 加载文章列表（增强错误提示） ===== */
 function loadPosts() {
-  const mockPosts = [
-    { title: '我的编程学习之路', date: '2026-01-15', category: '编程', desc: '从零基础到独立开发博客，分享我的学习经验和踩坑记录。' },
-    { title: 'Apex英雄身法教学', date: '2026-01-10', category: '游戏', desc: '详细讲解Apex中的滑铲、超级跳、身法连招，新手也能快速上手。' },
-    { title: '博客重构：从丑到高级的设计思路', date: '2026-01-05', category: '前端', desc: '分享本次博客视觉升级的核心思路，包括配色、动效、响应式设计。' }
-  ];
-
   const box = document.getElementById('postList');
-  mockPosts.forEach(p => {
-    box.innerHTML += `
-      <article class="card reveal">
-        <h2>${p.title}</h2>
-        <div class="meta">${p.date} · ${p.category}</div>
-        <p>${p.desc}</p>
-      </article>`;
-  });
-  initRevealAnimation();
+  
+  // 优先使用相对路径，增加跨域兼容
+  fetch('./posts.json', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8'
+    }
+  })
+    .then(response => {
+      console.log('JSON请求状态:', response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP错误：${response.status}（${response.statusText}）`);
+      }
+      return response.json();
+    })
+    .then(list => {
+      console.log('文章数据加载成功:', list);
+      if (list.length === 0) {
+        box.innerHTML = `
+          <div class="card">
+            <h2 style="background: none; -webkit-text-fill-color: var(--text-primary);">暂无文章</h2>
+            <p>当前还没有发布任何文章</p>
+          </div>`;
+        return;
+      }
+      list.forEach(p => {
+        box.innerHTML += `
+          <article class="card reveal">
+            <h2>${p.title || '无标题'}</h2>
+            <div class="meta">${p.date || '未知日期'} · ${p.category || '未分类'}</div>
+            <p>${p.desc || '无简介'}</p>
+          </article>`;
+      });
+      initRevealAnimation();
+    })
+    .catch(error => {
+      console.error('文章加载详细错误:', error);
+      // 更详细的错误提示
+      let errorMsg = '文章数据加载出错：';
+      if (error.message.includes('404')) {
+        errorMsg += '未找到posts.json文件（检查文件名/路径）';
+      } else if (error.message.includes('CORS')) {
+        errorMsg += '跨域限制（请用HTTP服务器打开，如Live Server）';
+      } else if (error.message.includes('JSON')) {
+        errorMsg += 'JSON格式错误（检查语法/逗号/引号）';
+      } else {
+        errorMsg += error.message;
+      }
+      
+      box.innerHTML = `
+        <div class="card">
+          <h2 style="background: none; -webkit-text-fill-color: var(--text-primary);">加载失败</h2>
+          <p>${errorMsg}</p>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:1rem;">
+            排查步骤：<br>
+            1. 确认posts.json和HTML在同一目录<br>
+            2. 确认JSON格式正确（无多余逗号、双引号）<br>
+            3. 用VSCode Live Server等HTTP服务器打开
+          </p>
+        </div>`;
+    });
 }
 
-/* ===== 9. 加载画廊图片 ===== */
+/* ===== 7. 加载画廊图片 ===== */
 function loadGallery() {
   const galleryBox = document.getElementById('galleryBox');
-  const imgCount = isMobile() ? 30 : 60;
+  const imgCount = isMobile() ? 20 : 40; // 手机端减少图片数量
   
   for (let i = 1; i <= imgCount; i++) {
     const img = new Image();
     img.src = `pic/${i}.jpg`;
     img.alt = `画廊图片 ${i}`;
+    // 图片加载失败时显示随机占位图
     img.onerror = () => {
-      img.src = 'https://picsum.photos/250/250?random=' + i;
+      img.src = `https://picsum.photos/150/150?random=${i}`; // 手机端占位图更小
     };
     img.onload = () => {
       galleryBox.appendChild(img);
@@ -1410,7 +1385,7 @@ function loadGallery() {
   }
 }
 
-/* ===== 10. Email炫酷弹窗功能 ===== */
+/* ===== 8. Email弹窗 ===== */
 function initEmailModal() {
   const emailBtn = document.getElementById('emailBtn');
   const emailModal = document.getElementById('emailModal');
@@ -1419,43 +1394,35 @@ function initEmailModal() {
   const emailDisplay = document.getElementById('emailDisplay');
   const copySuccess = document.getElementById('copySuccess');
   
-  // 打开弹窗
   emailBtn.addEventListener('click', () => {
     emailModal.classList.add('active');
-    // 禁止背景滚动
     document.body.style.overflow = 'hidden';
   });
   
-  // 关闭弹窗
   function closeModal() {
     emailModal.classList.remove('active');
     document.body.style.overflow = '';
-    // 重置复制提示
     copySuccess.classList.remove('active');
   }
   
   closeModalBtn.addEventListener('click', closeModal);
   
-  // 点击弹窗外部关闭
   emailModal.addEventListener('click', (e) => {
     if (e.target === emailModal) {
       closeModal();
     }
   });
   
-  // ESC键关闭
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && emailModal.classList.contains('active')) {
       closeModal();
     }
   });
   
-  // 复制邮箱功能
   copyEmailBtn.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(emailDisplay.textContent);
       copySuccess.classList.add('active');
-      // 2秒后隐藏提示
       setTimeout(() => {
         copySuccess.classList.remove('active');
       }, 2000);
@@ -1470,23 +1437,21 @@ function initEmailModal() {
   });
 }
 
-/* ===== 工具函数：检测移动端 ===== */
+/* ===== 工具函数 ===== */
 function isMobile() {
   return /Mobi|Android|iPhone/i.test(navigator.userAgent);
 }
 
-/* ===== 初始化所有功能 ===== */
+/* ===== 初始化 ===== */
 window.addEventListener('DOMContentLoaded', () => {
-  new ParticleGalaxy();       // 粒子背景
-  initMobileNav();            // 移动端导航
-  initRevealAnimation();      // 渐显动画
-  initThemeToggle();          // 主题切换
-  initNavScrollEffect();      // 导航滚动动效
-  initVisitCounter();         // 访问计数
-  initVisitInfo();            // 设备信息
-  loadPosts();                // 加载文章
-  loadGallery();              // 加载画廊
-  initEmailModal();           // Email弹窗
+  new ParticleGalaxy();
+  initMobileNav();
+  initRevealAnimation();
+  initThemeToggle();
+  initNavScrollEffect();
+  loadPosts();
+  loadGallery();
+  initEmailModal();
 });
 </script>
 </body>
