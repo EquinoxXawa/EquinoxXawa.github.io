@@ -581,6 +581,112 @@ section#posts.container {
   to { transform: scale(1.5); }
 }
 
+/* ================= 留言板样式（含留言人展示） ================= */
+section#comments.container {
+  max-width: 1000px;
+  margin: 8rem auto;
+  padding: 0 2rem;
+}
+
+section#comments h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 700;
+  margin-bottom: 2rem;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  display: inline-block;
+}
+
+section#comments h2::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60%;
+  height: 3px;
+  background: var(--accent-gradient-short);
+  border-radius: var(--radius-sm);
+}
+
+/* 留言卡片样式 */
+.comment-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 1.8rem;
+  backdrop-filter: blur(20px);
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+
+.comment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(34, 211, 238, 0.2);
+}
+
+/* 留言人信息 */
+.comment-author {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.author-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: white;
+  font-weight: 600;
+}
+
+.author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.author-name {
+  font-weight: 600;
+  color: var(--accent-primary);
+  font-size: 1.1rem;
+}
+
+.comment-date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* 留言内容 */
+.comment-content {
+  color: var(--text-primary);
+  line-height: 1.7;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-light);
+}
+
+/* 无留言/加载失败提示 */
+.comment-empty, .comment-error {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.comment-error {
+  color: #f87171;
+}
+
 /* ================= 图片画廊 ================= */
 section#gallery.container {
   max-width: 1200px;
@@ -610,7 +716,6 @@ section#gallery h2::after {
   border-radius: var(--radius-sm);
 }
 
-/* 桌面端画廊样式 */
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(clamp(180px, 20vw, 250px), 1fr));
@@ -830,7 +935,6 @@ footer#contact p {
 }
 
 /* ================= 响应式适配 ================= */
-/* 平板（768px以下） */
 @media (max-width: 768px) {
   .nav-links-wrapper {
     gap: 1.5rem;
@@ -850,6 +954,7 @@ footer#contact p {
   }
   section#about.intro,
   section#posts.container,
+  section#comments.container,
   section#gallery.container {
     margin: 5rem auto;
   }
@@ -863,14 +968,21 @@ footer#contact p {
     font-size: 1.1rem;
     padding: 1rem;
   }
-  /* 平板端画廊图片缩小 */
   .gallery {
     grid-template-columns: repeat(auto-fill, minmax(clamp(140px, 18vw, 200px), 1fr));
     gap: 1rem;
   }
+  /* 平板端留言板适配 */
+  .comment-author {
+    gap: 0.8rem;
+  }
+  .author-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
 }
 
-/* 手机（480px以下）- 重点：画廊图片大幅缩小 */
 @media (max-width: 480px) {
   nav {
     padding: 0 1rem;
@@ -887,14 +999,27 @@ footer#contact p {
   .card {
     padding: 1.5rem;
   }
-  /* 手机端画廊图片更小 */
   .gallery {
     grid-template-columns: repeat(auto-fill, minmax(clamp(100px, 15vw, 150px), 1fr));
     gap: 0.8rem;
   }
-  /* 手机端画廊图片hover效果弱化（避免占屏） */
   .gallery img:hover {
     transform: scale(1.03) rotate(0.5deg);
+  }
+  /* 手机端留言板适配 */
+  .comment-card {
+    padding: 1.5rem 1.2rem;
+  }
+  .author-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+  .author-name {
+    font-size: 1rem;
+  }
+  .comment-content {
+    font-size: 0.95rem;
   }
 }
 
@@ -924,6 +1049,7 @@ body {
         <a href="#home"><i class="fas fa-home"></i> 首页</a>
         <a href="#about"><i class="fas fa-user"></i> 关于</a>
         <a href="#posts"><i class="fas fa-file-alt"></i> 文章</a>
+        <a href="#comments"><i class="fas fa-comment-dots"></i> 留言板</a>
         <a href="#gallery"><i class="fas fa-images"></i> 画廊</a>
         <a href="#contact"><i class="fas fa-envelope"></i> 联系</a>
       </div>
@@ -940,6 +1066,7 @@ body {
     <a href="#home"><i class="fas fa-home"></i> 首页</a>
     <a href="#about"><i class="fas fa-user"></i> 关于</a>
     <a href="#posts"><i class="fas fa-file-alt"></i> 文章</a>
+    <a href="#comments"><i class="fas fa-comment-dots"></i> 留言板</a>
     <a href="#gallery"><i class="fas fa-images"></i> 画廊</a>
     <a href="#contact"><i class="fas fa-envelope"></i> 联系</a>
   </div>
@@ -983,6 +1110,12 @@ body {
   <div id="postList"></div>
 </section>
 
+<!-- 留言板（新增：文章下方、画廊上方） -->
+<section id="comments" class="container reveal">
+  <h2>留言板</h2>
+  <div id="commentList"></div>
+</section>
+
 <!-- 图片画廊 -->
 <section id="gallery" class="container reveal">
   <h2>图片画廊</h2>
@@ -1011,7 +1144,7 @@ body {
 </div>
 
 <script>
-/* ===== 1. 粒子背景（修改：痕迹自动消失） ===== */
+/* ===== 1. 粒子背景 ===== */
 class ParticleGalaxy {
   constructor() {
     this.canvas = document.getElementById('bg');
@@ -1021,7 +1154,7 @@ class ParticleGalaxy {
     this.particles = [];
     this.mouse = { x: null, y: null, radius: 180 };
     this.particleCount = this.isMobile() ? 200 : 500;
-    this.trailMaxAge = 15; // 痕迹最大存活帧数（越小消失越快）
+    this.trailMaxAge = 15; // 痕迹最大存活帧数
     this.init();
   }
 
@@ -1063,7 +1196,7 @@ class ParticleGalaxy {
         color: colorSet[Math.floor(Math.random() * colorSet.length)],
         alpha: Math.random() * 0.9 + 0.1,
         originalAlpha: Math.random() * 0.9 + 0.1,
-        trail: [] // 痕迹数组，每个元素：{x,y,age}
+        trail: []
       });
     }
   }
@@ -1099,31 +1232,25 @@ class ParticleGalaxy {
   }
 
   draw() {
-    // 半透明背景覆盖，让痕迹自然淡化
     this.ctx.fillStyle = document.body.classList.contains('light') 
       ? 'rgba(248, 250, 252, 0.1)' 
       : 'rgba(10, 14, 23, 0.1)';
     this.ctx.fillRect(0, 0, this.width, this.height);
 
     this.particles.forEach((particle, index) => {
-      // 添加当前位置到痕迹，记录帧数
       particle.trail.push({ 
         x: particle.x, 
         y: particle.y, 
         age: 0 
       });
 
-      // 清理超过最大年龄的痕迹
       particle.trail = particle.trail.filter(point => point.age < this.trailMaxAge);
-      // 所有痕迹年龄+1
       particle.trail.forEach(point => point.age++);
 
-      // 绘制痕迹（从旧到新，透明度递减）
       if (particle.trail.length > 1) {
         for (let i = 0; i < particle.trail.length - 1; i++) {
           const point1 = particle.trail[i];
           const point2 = particle.trail[i + 1];
-          // 痕迹透明度随年龄降低
           const trailAlpha = particle.alpha * (1 - point1.age / this.trailMaxAge) * 0.3;
           
           this.ctx.beginPath();
@@ -1135,23 +1262,19 @@ class ParticleGalaxy {
         }
       }
 
-      // 绘制粒子本体
       this.ctx.beginPath();
       this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
       this.ctx.fillStyle = particle.color.replace(/[^,]+(?=\))/, particle.alpha);
       this.ctx.fill();
 
-      // 粒子移动
       particle.x += particle.speedX;
       particle.y += particle.speedY;
 
-      // 边界循环（替代回弹，更自然）
       if (particle.x < 0) particle.x = this.width;
       if (particle.x > this.width) particle.x = 0;
       if (particle.y < 0) particle.y = this.height;
       if (particle.y > this.height) particle.y = 0;
 
-      // 鼠标交互
       if (this.mouse.x && this.mouse.y) {
         const dx = this.mouse.x - particle.x;
         const dy = this.mouse.y - particle.y;
@@ -1169,14 +1292,12 @@ class ParticleGalaxy {
           particle.size = Math.random() * 2 * scale + 0.3;
           particle.alpha = particle.originalAlpha * scale;
         } else {
-          // 无交互时减速，回到初始状态
           particle.speedX *= 0.98;
           particle.speedY *= 0.98;
           particle.size = Math.random() * 2 + 0.3;
           particle.alpha = particle.originalAlpha;
         }
 
-        // 粒子连线（仅鼠标附近）
         if (distance < this.mouse.radius / 1.5) {
           this.particles.forEach((particle2, index2) => {
             if (index !== index2) {
@@ -1300,11 +1421,10 @@ function initNavScrollEffect() {
   });
 }
 
-/* ===== 6. 加载文章列表（增强错误提示） ===== */
+/* ===== 6. 加载文章列表 ===== */
 function loadPosts() {
   const box = document.getElementById('postList');
   
-  // 优先使用相对路径，增加跨域兼容
   fetch('./posts.json', {
     method: 'GET',
     headers: {
@@ -1312,14 +1432,12 @@ function loadPosts() {
     }
   })
     .then(response => {
-      console.log('JSON请求状态:', response.status);
       if (!response.ok) {
         throw new Error(`HTTP错误：${response.status}（${response.statusText}）`);
       }
       return response.json();
     })
     .then(list => {
-      console.log('文章数据加载成功:', list);
       if (list.length === 0) {
         box.innerHTML = `
           <div class="card">
@@ -1339,15 +1457,14 @@ function loadPosts() {
       initRevealAnimation();
     })
     .catch(error => {
-      console.error('文章加载详细错误:', error);
-      // 更详细的错误提示
+      console.error('文章加载错误:', error);
       let errorMsg = '文章数据加载出错：';
       if (error.message.includes('404')) {
         errorMsg += '未找到posts.json文件（检查文件名/路径）';
       } else if (error.message.includes('CORS')) {
-        errorMsg += '跨域限制（请用HTTP服务器打开，如Live Server）';
+        errorMsg += '跨域限制（请用HTTP服务器打开）';
       } else if (error.message.includes('JSON')) {
-        errorMsg += 'JSON格式错误（检查语法/逗号/引号）';
+        errorMsg += 'JSON格式错误（检查语法）';
       } else {
         errorMsg += error.message;
       }
@@ -1359,25 +1476,104 @@ function loadPosts() {
           <p style="font-size:0.8rem; color:var(--text-muted); margin-top:1rem;">
             排查步骤：<br>
             1. 确认posts.json和HTML在同一目录<br>
-            2. 确认JSON格式正确（无多余逗号、双引号）<br>
-            3. 用VSCode Live Server等HTTP服务器打开
+            2. 确认JSON格式正确<br>
+            3. 用VSCode Live Server打开
           </p>
         </div>`;
     });
 }
 
-/* ===== 7. 加载画廊图片 ===== */
+/* ===== 7. 加载留言板（核心：显示留言人） ===== */
+function loadComments() {
+  const commentList = document.getElementById('commentList');
+  
+  // 加载同目录下的comments.json
+  fetch('./comments.json', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8'
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP错误：${response.status}`);
+      }
+      return response.json();
+    })
+    .then(comments => {
+      console.log('留言数据加载成功:', comments);
+      
+      // 无留言时的提示
+      if (!comments || comments.length === 0) {
+        commentList.innerHTML = `
+          <div class="comment-empty reveal">
+            <i class="fas fa-comment-slash" style="font-size:2rem; margin-bottom:1rem; color:var(--accent-primary);"></i>
+            <p>暂无留言，快来抢沙发吧～</p>
+          </div>`;
+        initRevealAnimation();
+        return;
+      }
+      
+      // 渲染留言列表（含留言人）
+      let html = '';
+      comments.forEach((comment, index) => {
+        // 生成留言人首字母头像
+        const avatarText = comment.username 
+          ? comment.username.substring(0, 1).toUpperCase() 
+          : '未知';
+        
+        html += `
+          <div class="comment-card reveal" style="animation-delay: ${index * 0.1}s">
+            <div class="comment-author">
+              <div class="author-avatar">${avatarText}</div>
+              <div class="author-info">
+                <div class="author-name">${comment.username || '匿名用户'}</div>
+                <div class="comment-date">${comment.date || '未知时间'}</div>
+              </div>
+            </div>
+            <div class="comment-content">${comment.content || '无留言内容'}</div>
+          </div>`;
+      });
+      
+      commentList.innerHTML = html;
+      initRevealAnimation();
+    })
+    .catch(error => {
+      console.error('留言加载错误:', error);
+      let errorMsg = '留言加载失败：';
+      if (error.message.includes('404')) {
+        errorMsg += '未找到comments.json文件';
+      } else if (error.message.includes('JSON')) {
+        errorMsg += 'JSON格式错误';
+      } else if (error.message.includes('CORS')) {
+        errorMsg += '跨域限制（请用HTTP服务器打开）';
+      } else {
+        errorMsg += error.message;
+      }
+      
+      commentList.innerHTML = `
+        <div class="comment-error reveal">
+          <i class="fas fa-exclamation-triangle" style="font-size:2rem; margin-bottom:1rem;"></i>
+          <p>${errorMsg}</p>
+          <p style="font-size:0.8rem; margin-top:1rem;">
+            请确保comments.json文件存在且格式正确
+          </p>
+        </div>`;
+      initRevealAnimation();
+    });
+}
+
+/* ===== 8. 加载画廊图片 ===== */
 function loadGallery() {
   const galleryBox = document.getElementById('galleryBox');
-  const imgCount = isMobile() ? 20 : 40; // 手机端减少图片数量
+  const imgCount = isMobile() ? 20 : 40;
   
   for (let i = 1; i <= imgCount; i++) {
     const img = new Image();
     img.src = `pic/${i}.jpg`;
     img.alt = `画廊图片 ${i}`;
-    // 图片加载失败时显示随机占位图
     img.onerror = () => {
-      img.src = `https://picsum.photos/150/150?random=${i}`; // 手机端占位图更小
+      img.src = `https://picsum.photos/150/150?random=${i}`;
     };
     img.onload = () => {
       galleryBox.appendChild(img);
@@ -1385,7 +1581,7 @@ function loadGallery() {
   }
 }
 
-/* ===== 8. Email弹窗 ===== */
+/* ===== 9. Email弹窗 ===== */
 function initEmailModal() {
   const emailBtn = document.getElementById('emailBtn');
   const emailModal = document.getElementById('emailModal');
@@ -1442,7 +1638,7 @@ function isMobile() {
   return /Mobi|Android|iPhone/i.test(navigator.userAgent);
 }
 
-/* ===== 初始化 ===== */
+/* ===== 初始化所有功能 ===== */
 window.addEventListener('DOMContentLoaded', () => {
   new ParticleGalaxy();
   initMobileNav();
@@ -1450,6 +1646,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   initNavScrollEffect();
   loadPosts();
+  loadComments(); // 初始化留言板
   loadGallery();
   initEmailModal();
 });
