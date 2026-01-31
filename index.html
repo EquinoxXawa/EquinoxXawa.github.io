@@ -581,13 +581,15 @@ section#posts.container {
   to { transform: scale(1.5); }
 }
 
-/* ================= 留言板样式（含留言人展示） ================= */
+/* ================= 留言板样式（优化版） ================= */
+/* 关键修改1：统一容器样式，和画廊完全对齐 */
 section#comments.container {
-  max-width: 1000px;
+  max-width: 1200px; /* 和画廊保持一致的最大宽度 */
   margin: 8rem auto;
   padding: 0 2rem;
 }
 
+/* 关键修改2：标题样式和画廊完全统一，确保对齐 */
 section#comments h2 {
   font-size: clamp(1.5rem, 3vw, 2.2rem);
   font-weight: 700;
@@ -597,6 +599,7 @@ section#comments h2 {
   -webkit-text-fill-color: transparent;
   position: relative;
   display: inline-block;
+  /* 和画廊标题完全一致的下划线样式 */
 }
 
 section#comments h2::after {
@@ -610,54 +613,78 @@ section#comments h2::after {
   border-radius: var(--radius-sm);
 }
 
-/* 留言卡片样式 */
+/* 关键修改3：优化留言卡片特效，更简洁高级 */
 .comment-card {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  padding: 1.8rem;
+  padding: 2rem;
   backdrop-filter: blur(20px);
   margin-bottom: 1.5rem;
   box-shadow: var(--shadow-sm);
-  transition: all var(--transition-normal);
+  /* 简化hover特效：去掉过度位移，只保留柔和的阴影和边框变化 */
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
+/* 新增：卡片底部渐变装饰条，更精致 */
+.comment-card::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent-gradient-short);
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+/* 优化hover特效：更柔和不夸张 */
 .comment-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px); /* 减小位移，更沉稳 */
   box-shadow: var(--shadow-md);
-  border-color: rgba(34, 211, 238, 0.2);
+  border-color: rgba(34, 211, 238, 0.15); /* 弱化边框变色 */
 }
 
-/* 留言人信息 */
+.comment-card:hover::before {
+  opacity: 1; /* hover时显示完整渐变条 */
+}
+
+/* 优化留言人信息排版 */
 .comment-author {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 1.2rem;
+  margin-bottom: 1.2rem;
 }
 
 .author-avatar {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: var(--accent-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: white;
   font-weight: 600;
+  /* 简化头像特效，更干净 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .author-info {
   display: flex;
   flex-direction: column;
+  gap: 0.2rem; /* 减小间距，更紧凑 */
 }
 
 .author-name {
   font-weight: 600;
   color: var(--accent-primary);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
 }
 
 .comment-date {
@@ -665,26 +692,39 @@ section#comments h2::after {
   color: var(--text-muted);
 }
 
-/* 留言内容 */
+/* 优化留言内容样式 */
 .comment-content {
   color: var(--text-primary);
   line-height: 1.7;
-  padding-top: 0.5rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--border-light);
+  font-size: 1rem;
 }
 
-/* 无留言/加载失败提示 */
+/* 无留言/加载失败提示（优化样式） */
 .comment-empty, .comment-error {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  padding: 2rem;
+  padding: 3rem 2rem;
   text-align: center;
   color: var(--text-muted);
+  margin-top: 0.5rem;
 }
 
 .comment-error {
   color: #f87171;
+}
+
+.comment-empty i {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--accent-primary);
+  opacity: 0.8;
+}
+
+.comment-empty p {
+  font-size: 1.1rem;
 }
 
 /* ================= 图片画廊 ================= */
@@ -974,12 +1014,15 @@ footer#contact p {
   }
   /* 平板端留言板适配 */
   .comment-author {
-    gap: 0.8rem;
+    gap: 1rem;
   }
   .author-avatar {
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
+    width: 48px;
+    height: 48px;
+    font-size: 1.1rem;
+  }
+  .comment-card {
+    padding: 1.8rem 1.5rem;
   }
 }
 
@@ -1011,15 +1054,21 @@ footer#contact p {
     padding: 1.5rem 1.2rem;
   }
   .author-avatar {
-    width: 36px;
-    height: 36px;
-    font-size: 0.9rem;
+    width: 42px;
+    height: 42px;
+    font-size: 1rem;
   }
   .author-name {
     font-size: 1rem;
   }
   .comment-content {
     font-size: 0.95rem;
+  }
+  .comment-empty, .comment-error {
+    padding: 2rem 1.5rem;
+  }
+  .comment-empty i {
+    font-size: 2rem;
   }
 }
 
@@ -1110,7 +1159,7 @@ body {
   <div id="postList"></div>
 </section>
 
-<!-- 留言板（新增：文章下方、画廊上方） -->
+<!-- 留言板（优化版） -->
 <section id="comments" class="container reveal">
   <h2>留言板</h2>
   <div id="commentList"></div>
@@ -1483,7 +1532,7 @@ function loadPosts() {
     });
 }
 
-/* ===== 7. 加载留言板（核心：显示留言人） ===== */
+/* ===== 7. 加载留言板（优化版） ===== */
 function loadComments() {
   const commentList = document.getElementById('commentList');
   
@@ -1507,14 +1556,14 @@ function loadComments() {
       if (!comments || comments.length === 0) {
         commentList.innerHTML = `
           <div class="comment-empty reveal">
-            <i class="fas fa-comment-slash" style="font-size:2rem; margin-bottom:1rem; color:var(--accent-primary);"></i>
+            <i class="fas fa-comment-slash"></i>
             <p>暂无留言，快来抢沙发吧～</p>
           </div>`;
         initRevealAnimation();
         return;
       }
       
-      // 渲染留言列表（含留言人）
+      // 渲染留言列表（优化排版）
       let html = '';
       comments.forEach((comment, index) => {
         // 生成留言人首字母头像
@@ -1553,7 +1602,7 @@ function loadComments() {
       
       commentList.innerHTML = `
         <div class="comment-error reveal">
-          <i class="fas fa-exclamation-triangle" style="font-size:2rem; margin-bottom:1rem;"></i>
+          <i class="fas fa-exclamation-triangle"></i>
           <p>${errorMsg}</p>
           <p style="font-size:0.8rem; margin-top:1rem;">
             请确保comments.json文件存在且格式正确
