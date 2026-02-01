@@ -76,7 +76,17 @@ canvas#bg {
   pointer-events: none;
   filter: blur(0.5px);
 }
-
+/* ================= 滚动进度条 ================= */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--accent-gradient);
+  width: 0%;
+  z-index: 1000;
+  transition: width 0.1s ease;
+}
 /* ================= 导航栏 ================= */
 nav {
   position: sticky;
@@ -1083,6 +1093,7 @@ body {
 </style>
 </head>
 <body>
+<div class="scroll-progress" id="scrollProgress"></div>
 <canvas id="bg"></canvas>
 
 <!-- 导航栏 -->
@@ -1194,6 +1205,8 @@ body {
 
 <script>
 /* ===== 1. 粒子背景 ===== */
+/* ===== 1. 简化版粒子背景（减少冗乱感） ===== */
+/* ===== 1. 炫酷版粒子星系背景（增强视觉效果） ===== */
 class ParticleGalaxy {
   constructor() {
     this.canvas = document.getElementById('bg');
@@ -1201,9 +1214,12 @@ class ParticleGalaxy {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.particles = [];
-    this.mouse = { x: null, y: null, radius: 180 };
-    this.particleCount = this.isMobile() ? 200 : 500;
-    this.trailMaxAge = 15; // 痕迹最大存活帧数
+    // 增强鼠标交互范围
+    this.mouse = { x: null, y: null, radius: 200 };
+    // 增加粒子数量：移动端150，桌面端300（保证视觉效果）
+    this.particleCount = this.isMobile() ? 150 : 300;
+    // 连线距离阈值
+    this.connectDistance = this.isMobile() ? 80 : 120;
     this.init();
   }
 
@@ -1223,29 +1239,36 @@ class ParticleGalaxy {
     this.particles = [];
     const isLight = document.body.classList.contains('light');
     for (let i = 0; i < this.particleCount; i++) {
+      // 粒子大小范围扩大，增加视觉层次
       const size = Math.random() * 2 + 0.3;
+      // 增强颜色渐变效果，增加更多色彩层次
       const colorSet = isLight 
         ? [
-            `rgba(${100 + Math.random() * 80}, ${150 + Math.random() * 80}, ${255}, ${0.6 + Math.random() * 0.4})`,
+            `rgba(${80 + Math.random() * 100}, ${120 + Math.random() * 100}, ${255}, ${0.6 + Math.random() * 0.4})`,
             `rgba(${59 + Math.random() * 80}, ${130 + Math.random() * 80}, ${246}, ${0.6 + Math.random() * 0.4})`,
-            `rgba(${6 + Math.random() * 80}, ${182 + Math.random() * 80}, ${212}, ${0.6 + Math.random() * 0.4})`
+            `rgba(${37 + Math.random() * 80}, ${99 + Math.random() * 80}, ${235}, ${0.6 + Math.random() * 0.4})`
           ]
         : [
-            `rgba(${34 + Math.random() * 50}, ${211 + Math.random() * 20}, ${238}, ${0.4 + Math.random() * 0.6})`,
-            `rgba(${99 + Math.random() * 50}, ${102 + Math.random() * 20}, ${241}, ${0.4 + Math.random() * 0.6})`,
-            `rgba(${217 + Math.random() * 30}, ${70 + Math.random() * 20}, ${239}, ${0.4 + Math.random() * 0.6})`
+            `rgba(${34 + Math.random() * 50}, ${211 + Math.random() * 20}, ${238}, ${0.4 + Math.random() * 0.5})`,
+            `rgba(${99 + Math.random() * 50}, ${102 + Math.random() * 20}, ${241}, ${0.4 + Math.random() * 0.5})`,
+            `rgba(${168 + Math.random() * 50}, ${85 + Math.random() * 20}, ${247}, ${0.4 + Math.random() * 0.5})`
           ];
       
       this.particles.push({
         x: Math.random() * this.width,
         y: Math.random() * this.height,
         size,
+        // 调整速度范围，增加运动层次感
         speedX: (Math.random() - 0.5) * 0.4,
         speedY: (Math.random() - 0.5) * 0.4,
         color: colorSet[Math.floor(Math.random() * colorSet.length)],
-        alpha: Math.random() * 0.9 + 0.1,
-        originalAlpha: Math.random() * 0.9 + 0.1,
-        trail: []
+        alpha: Math.random() * 0.8 + 0.2,
+        originalAlpha: Math.random() * 0.8 + 0.2,
+        // 新增：呼吸动画参数
+        pulseSpeed: Math.random() * 0.01 + 0.005,
+        pulseOffset: Math.random() * Math.PI * 2,
+        // 新增：光晕大小
+        glowSize: size * 2
       });
     }
   }
@@ -1256,6 +1279,7 @@ class ParticleGalaxy {
       this.height = window.innerHeight;
       this.canvas.width = this.width;
       this.canvas.height = this.height;
+      this.connectDistance = this.isMobile() ? 80 : 120;
       this.createParticles();
     });
 
@@ -1280,98 +1304,112 @@ class ParticleGalaxy {
     });
   }
 
-  draw() {
-    this.ctx.fillStyle = document.body.classList.contains('light') 
-      ? 'rgba(248, 250, 252, 0.1)' 
-      : 'rgba(10, 14, 23, 0.1)';
-    this.ctx.fillRect(0, 0, this.width, this.height);
-
-    this.particles.forEach((particle, index) => {
-      particle.trail.push({ 
-        x: particle.x, 
-        y: particle.y, 
-        age: 0 
-      });
-
-      particle.trail = particle.trail.filter(point => point.age < this.trailMaxAge);
-      particle.trail.forEach(point => point.age++);
-
-      if (particle.trail.length > 1) {
-        for (let i = 0; i < particle.trail.length - 1; i++) {
-          const point1 = particle.trail[i];
-          const point2 = particle.trail[i + 1];
-          const trailAlpha = particle.alpha * (1 - point1.age / this.trailMaxAge) * 0.3;
+  // 新增：绘制粒子之间的连线
+  drawConnections() {
+    for (let a = 0; a < this.particles.length; a++) {
+      for (let b = a; b < this.particles.length; b++) {
+        const dx = this.particles[a].x - this.particles[b].x;
+        const dy = this.particles[a].y - this.particles[b].y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // 距离小于阈值时绘制连线
+        if (distance < this.connectDistance) {
+          // 连线透明度随距离衰减
+          const opacity = 1 - (distance / this.connectDistance);
+          const isLight = document.body.classList.contains('light');
+          const lineColor = isLight 
+            ? `rgba(148, 163, 184, ${opacity * 0.2})`
+            : `rgba(34, 211, 238, ${opacity * 0.3})`;
           
           this.ctx.beginPath();
-          this.ctx.moveTo(point1.x, point1.y);
-          this.ctx.lineTo(point2.x, point2.y);
-          this.ctx.strokeStyle = particle.color.replace(/[^,]+(?=\))/, trailAlpha);
-          this.ctx.lineWidth = particle.size * 0.5 * (1 - point1.age / this.trailMaxAge);
+          this.ctx.strokeStyle = lineColor;
+          this.ctx.lineWidth = opacity * 0.8;
+          this.ctx.moveTo(this.particles[a].x, this.particles[a].y);
+          this.ctx.lineTo(this.particles[b].x, this.particles[b].y);
           this.ctx.stroke();
         }
       }
+    }
+  }
 
+  draw() {
+    // 优化背景渐变填充
+    const isLight = document.body.classList.contains('light');
+    const bgGradient = this.ctx.createLinearGradient(0, 0, this.width, this.height);
+    bgGradient.addColorStop(0, isLight ? 'rgba(248, 250, 252, 0.1)' : 'rgba(10, 14, 23, 0.1)');
+    bgGradient.addColorStop(1, isLight ? 'rgba(226, 232, 240, 0.1)' : 'rgba(15, 23, 42, 0.1)');
+    
+    this.ctx.clearRect(0, 0, this.width, this.height);
+    this.ctx.fillStyle = bgGradient;
+    this.ctx.fillRect(0, 0, this.width, this.height);
+
+    // 先绘制连线
+    this.drawConnections();
+
+    this.particles.forEach((particle) => {
+      // 粒子呼吸动画（大小动态变化）
+      const pulse = Math.sin(Date.now() * particle.pulseSpeed + particle.pulseOffset) * 0.5 + 1;
+      const currentSize = particle.size * pulse;
+      
+      // 绘制粒子光晕
       this.ctx.beginPath();
-      this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+      this.ctx.arc(particle.x, particle.y, particle.glowSize * pulse, 0, Math.PI * 2);
+      this.ctx.fillStyle = particle.color.replace(/[^,]+(?=\))/, particle.alpha * 0.1);
+      this.ctx.fill();
+
+      // 绘制粒子主体
+      this.ctx.beginPath();
+      this.ctx.arc(particle.x, particle.y, currentSize, 0, Math.PI * 2);
       this.ctx.fillStyle = particle.color.replace(/[^,]+(?=\))/, particle.alpha);
       this.ctx.fill();
 
-      particle.x += particle.speedX;
-      particle.y += particle.speedY;
+      // 基础移动逻辑（增加随机变速，更自然）
+      particle.x += particle.speedX * (0.9 + Math.random() * 0.2);
+      particle.y += particle.speedY * (0.9 + Math.random() * 0.2);
 
-      if (particle.x < 0) particle.x = this.width;
-      if (particle.x > this.width) particle.x = 0;
-      if (particle.y < 0) particle.y = this.height;
-      if (particle.y > this.height) particle.y = 0;
+      // 边界回弹（增加缓动效果）
+      if (particle.x < 0 || particle.x > this.width) {
+        particle.speedX *= -1 * (0.8 + Math.random() * 0.4);
+        particle.x = Math.max(0, Math.min(this.width, particle.x));
+      }
+      if (particle.y < 0 || particle.y > this.height) {
+        particle.speedY *= -1 * (0.8 + Math.random() * 0.4);
+        particle.y = Math.max(0, Math.min(this.height, particle.y));
+      }
 
+      // 增强鼠标交互效果
       if (this.mouse.x && this.mouse.y) {
         const dx = this.mouse.x - particle.x;
         const dy = this.mouse.y - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
         if (distance < this.mouse.radius) {
-          const forceDirectionX = dx / distance;
-          const forceDirectionY = dy / distance;
-          const force = (this.mouse.radius - distance) / this.mouse.radius;
+          // 更强的吸引力
+          const force = (this.mouse.radius - distance) / this.mouse.radius * 0.08;
+          particle.speedX += dx / distance * force;
+          particle.speedY += dy / distance * force;
           
-          particle.speedX += forceDirectionX * force * 0.05;
-          particle.speedY += forceDirectionY * force * 0.05;
+          // 鼠标附近粒子发光、放大
+          particle.alpha = Math.min(1, particle.originalAlpha + 0.5);
+          particle.glowSize = particle.size * 3;
           
-          const scale = 1 + (this.mouse.radius - distance) / this.mouse.radius;
-          particle.size = Math.random() * 2 * scale + 0.3;
-          particle.alpha = particle.originalAlpha * scale;
+          // 限制最大速度，避免粒子乱飞
+          particle.speedX = Math.max(-1.2, Math.min(1.2, particle.speedX));
+          particle.speedY = Math.max(-1.2, Math.min(1.2, particle.speedY));
         } else {
-          particle.speedX *= 0.98;
-          particle.speedY *= 0.98;
-          particle.size = Math.random() * 2 + 0.3;
-          particle.alpha = particle.originalAlpha;
+          // 恢复默认状态（缓动恢复）
+          particle.alpha *= 0.98;
+          particle.glowSize *= 0.98;
+          // 速度衰减，更顺滑
+          particle.speedX *= 0.97;
+          particle.speedY *= 0.97;
         }
-
-        if (distance < this.mouse.radius / 1.5) {
-          this.particles.forEach((particle2, index2) => {
-            if (index !== index2) {
-              const dx2 = particle.x - particle2.x;
-              const dy2 = particle.y - particle2.y;
-              const distance2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-              if (distance2 < 100) {
-                const opacity = 1 - (distance2 / 100);
-                const gradient = this.ctx.createLinearGradient(
-                  particle.x, particle.y,
-                  particle2.x, particle2.y
-                );
-                gradient.addColorStop(0, particle.color.replace(/[^,]+(?=\))/, opacity * 0.2));
-                gradient.addColorStop(1, particle2.color.replace(/[^,]+(?=\))/, opacity * 0.2));
-                
-                this.ctx.beginPath();
-                this.ctx.strokeStyle = gradient;
-                this.ctx.lineWidth = 0.6;
-                this.ctx.moveTo(particle.x, particle.y);
-                this.ctx.lineTo(particle2.x, particle2.y);
-                this.ctx.stroke();
-              }
-            }
-          });
-        }
+      } else {
+        // 无鼠标时恢复默认状态
+        particle.alpha *= 0.99;
+        particle.glowSize *= 0.99;
+        particle.speedX *= 0.98;
+        particle.speedY *= 0.98;
       }
     });
   }
@@ -1381,7 +1419,6 @@ class ParticleGalaxy {
     requestAnimationFrame(() => this.animate());
   }
 }
-
 /* ===== 2. 移动端导航 ===== */
 function initMobileNav() {
   const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -1643,7 +1680,17 @@ function initEmailModal() {
     emailModal.classList.add('active');
     document.body.style.overflow = 'hidden';
   });
+  /* ===== 11. 滚动进度条 ===== */
+function initScrollProgress() {
+  const progressBar = document.getElementById('scrollProgress');
   
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.body.scrollHeight - window.innerHeight;
+    const scrollPercent = (scrollTop / docHeight) * 100;
+    progressBar.style.width = `${scrollPercent}%`;
+  });
+}
   function closeModal() {
     emailModal.classList.remove('active');
     document.body.style.overflow = '';
