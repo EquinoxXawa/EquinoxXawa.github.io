@@ -1419,33 +1419,6 @@ class ParticleGalaxy {
     requestAnimationFrame(() => this.animate());
   }
 }
-/* ===== 新增：返回顶部功能 ===== */
-function initBackToTop() {
-  const backToTopBtn = document.getElementById('backToTop');
-  
-  // 滚动监听：控制按钮显示/隐藏
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) {
-      backToTopBtn.classList.add('active');
-    } else {
-      backToTopBtn.classList.remove('active');
-    }
-    
-    // 同步更新滚动进度条
-    const scrollProgress = document.getElementById('scrollProgress');
-    const totalHeight = document.body.scrollHeight - window.innerHeight;
-    const progress = (window.scrollY / totalHeight) * 100;
-    scrollProgress.style.width = `${progress}%`;
-  });
-  
-  // 点击返回顶部（平滑滚动）
-  backToTopBtn.addEventListener('click', () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  });
-}
 /* ===== 2. 移动端导航 ===== */
 function initMobileNav() {
   const hamburgerBtn = document.getElementById('hamburgerBtn');
