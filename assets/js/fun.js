@@ -133,15 +133,21 @@
     var b = best();
     if (b) result.textContent = "历史最快：" + b + " ms";
 
-    function reset() {
+    function clearTimer() {
+      if (window.__reflexTimer) { clearTimeout(window.__reflexTimer); window.__reflexTimer = null; }
+    }
+    function toIdle() {
+      clearTimer();
       state = "idle";
       box.textContent = "点我开始";
       box.className = "r-box r-wait";
-      window.__reflexTimer = null;
     }
-    function start() {
-      reset();
+    function begin() {
+      clearTimer();
+      state = "waiting";
       box.textContent = "等待变绿（1-5 秒随机）……";
+      box.className = "r-box r-wait";
+      if (result) result.textContent = "";
       var delay = 1000 + Math.random() * 4000; // 保证在 5 秒内变绿
       window.__reflexTimer = setTimeout(function () {
         if (state !== "waiting") return;
@@ -152,12 +158,11 @@
       }, delay);
     }
     function clickBox() {
-      if (state === "idle") {
-        state = "waiting";
-        start();
+      if (state === "idle" || state === "done") {
+        begin();
       } else if (state === "waiting") {
-        // 抢跑了
-        window.__reflexTimer && clearTimeout(window.__reflexTimer);
+        // 抢跑
+        clearTimer();
         state = "done";
         box.textContent = "抢跑啦，等变绿再点";
         box.className = "r-box r-done";
@@ -169,8 +174,11 @@
         box.className = "r-box r-done";
         result.innerHTML = "本次 <b>" + ms + " ms</b> · " + esc(rating(ms));
         if (!b || ms < b) {
+          b = ms;
           try { localStorage.setItem(BEST_KEY, String(ms)); } catch (e) {}
           result.innerHTML += "<br>新纪录，存入本地！";
+        } else {
+          result.innerHTML += "<br>历史最快：" + b + " ms";
         }
       }
     }
@@ -178,8 +186,8 @@
     box.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); clickBox(); }
     });
-    retry.addEventListener("click", start);
-    reset();
+    retry.addEventListener("click", begin);
+    toIdle();
   }
 
   /* ---------- 彩带 ---------- */

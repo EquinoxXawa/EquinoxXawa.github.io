@@ -430,26 +430,33 @@
      访客计数
      ========================================================= */
   var badge = document.getElementById("visitBadge");
+  function renderVisits(v) {
+    if (!badge || !v) return;
+    badge.innerHTML = "";
+    [["今日访问 ", v.today || 0], ["累计访问 ", v.total || 0]].forEach(function (pair) {
+      var span = document.createElement("span");
+      span.innerHTML = pair[0] + "<b>" + pair[1] + "</b>";
+      badge.appendChild(span);
+    });
+    badge.hidden = false;
+  }
   function initVisits() {
     if (!badge) return;
-    fetch(API + "/visits", { cache: "no-store" })
+    var bumped = false;
+    try { bumped = !!sessionStorage.getItem("eqx-v"); } catch (e) {}
+    // 新会话先 +1 再展示（数字即时正确）；老会话直接读取
+    var req = bumped
+      ? fetch(API + "/visits", { cache: "no-store" })
+      : fetch(API + "/visits", { method: "POST", cache: "no-store" });
+    req
       .then(function (r) { if (!r.ok) throw 0; return r.json(); })
       .then(function (v) {
-        badge.innerHTML = "";
-        [["今日访问 ", v.today || 0], ["累计访问 ", v.total || 0]].forEach(function (pair) {
-          var span = document.createElement("span");
-          span.innerHTML = pair[0] + "<b>" + pair[1] + "</b>";
-          badge.appendChild(span);
-        });
-        badge.hidden = false;
-        try {
-          if (!sessionStorage.getItem("eqx-v")) {
-            sessionStorage.setItem("eqx-v", "1");
-            fetch(API + "/visits", { method: "POST" }).catch(function () {});
-          }
-        } catch (e) {}
+        renderVisits(v);
+        if (!bumped) {
+          try { sessionStorage.setItem("eqx-v", "1"); } catch (e) {}
+        }
       })
-      .catch(function () {});
+      .catch(function () { /* 非服务器环境，保持隐藏 */ });
   }
   initVisits();
 
