@@ -412,8 +412,12 @@ html.js .reveal { position: relative; z-index: 1; }
 }
 .cursor {
   display: inline-block;
-  margin-left: 2px;
-  color: var(--accent-2);
+  width: 2px;
+  height: 1.12em;
+  margin-left: 3px;
+  vertical-align: -0.18em;
+  border-radius: 1px;
+  background: var(--accent-2);
   animation: blink 1.05s steps(1) infinite;
 }
 @keyframes blink { 50% { opacity: 0; } }
@@ -832,4 +836,244 @@ html.js .reveal[data-d="3"] { transition-delay: 0.16s; }
 @media (max-width: 540px) {
   .qa-form { padding: 1.1rem 1.05rem; }
   .qa-item { padding: 1rem 1.05rem; }
+}
+
+/* =========================================================
+   问答：工具栏 / 管理员 / 回复 / 删除
+   ========================================================= */
+.qa-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 0.4rem 0 1.4rem;
+}
+.btn-sm { padding: 0.42rem 1rem; font-size: 0.86rem; }
+
+.qa-admin-panel { margin-bottom: 1.2rem; }
+.qa-admin-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  background: var(--card);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-m);
+  padding: 0.85rem 1rem;
+}
+.qa-admin-inner input {
+  font: inherit;
+  color: var(--text);
+  background: var(--chip-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  padding: 0.5rem 0.85rem;
+  max-width: 14rem;
+  width: 100%;
+}
+.qa-admin-inner input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+#adminStatus { flex-basis: 100%; }
+.qa-admin-inner .qa-status.ok { color: #34d399; }
+.qa-admin-inner .qa-status.err { color: var(--danger); }
+
+/* 站长回复块 */
+.qa-reply {
+  margin-top: 0.8rem;
+  background: var(--grad-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: var(--radius-m);
+  padding: 0.8rem 1rem;
+}
+.qa-reply-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+.qa-reply-date { font-family: var(--font-mono); font-weight: 400; color: var(--muted); font-size: 0.75rem; }
+.qa-reply-text { color: var(--text-soft); font-size: 0.93rem; white-space: pre-wrap; word-break: break-word; }
+
+/* 管理操作（解锁后显示） */
+.qa-admin-ops {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.qa-mini-btn {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: var(--chip-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-full);
+  padding: 0.26rem 0.8rem;
+  transition: color 0.2s, border-color 0.2s;
+}
+.qa-mini-btn:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.qa-mini-btn.danger:hover { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+.qa-replybox { margin-top: 0.6rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.qa-replybox textarea {
+  flex: 1 1 18rem;
+  min-height: 56px;
+  resize: vertical;
+  font: inherit;
+  color: var(--text);
+  background: var(--chip-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  padding: 0.55rem 0.8rem;
+}
+.qa-replybox textarea:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+
+/* =========================================================
+   玩法坞 + 弹窗
+   ========================================================= */
+.fun-dock {
+  position: fixed;
+  left: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 85;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.fun-dock-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-pop);
+  transition: transform 0.25s var(--ease), color 0.25s, border-color 0.25s, background 0.25s;
+}
+.fun-dock-btn:hover {
+  transform: translateY(-3px) scale(1.04);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: var(--card-hover);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: 1.2rem;
+  background: rgba(8, 10, 18, 0.55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.25s var(--ease);
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.panel {
+  width: min(430px, 100%);
+  max-height: min(76vh, 620px);
+  overflow: auto;
+  background: var(--bg-raise);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-pop);
+  animation: popIn 0.3s var(--ease);
+}
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.panel-head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg-raise) 90%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  z-index: 1;
+}
+.panel-head h3 { font-size: 1.12rem; font-weight: 800; }
+#panelClose { font-size: 1.5rem; line-height: 1; color: var(--muted); }
+#panelClose:hover { color: var(--danger); }
+.panel-body { padding: 1.25rem; }
+
+/* 手速测试 */
+.fun-tip { color: var(--muted); font-size: 0.88rem; margin-bottom: 0.9rem; }
+.r-box {
+  border-radius: var(--radius-m);
+  border: 1px solid var(--line-strong);
+  min-height: 190px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 1rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--muted);
+  background: var(--chip-bg);
+  transition: background 0.18s, color 0.18s, transform 0.12s;
+  user-select: none;
+  cursor: pointer;
+}
+.r-box.r-wait { color: var(--muted); }
+.r-box.r-ready {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 12px 30px -12px rgba(16, 185, 129, 0.6);
+}
+.r-box.r-done { color: var(--text-soft); }
+.fun-row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
+.fun-result { color: var(--muted); font-size: 0.9rem; }
+.fun-result b { color: var(--accent); font-size: 1.35rem; margin: 0 0.2rem; }
+
+/* 运势 / 一言 */
+.fortune-date { font-family: var(--font-mono); color: var(--muted); font-size: 0.8rem; }
+.fortune-rank {
+  font-size: 3.2rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  line-height: 1.2;
+  margin: 0.6rem 0 0.2rem;
+}
+.fortune-text { color: var(--text-soft); }
+.word-line {
+  font-size: 1.18rem;
+  line-height: 1.9;
+  color: var(--text);
+  font-weight: 600;
+  min-height: 4.5em;
+}
+.word-src { margin-top: 0.7rem; color: var(--muted); font-size: 0.82rem; font-family: var(--font-mono); }
+
+@media (max-width: 540px) {
+  .fun-dock { left: 0.8rem; bottom: 0.8rem; gap: 0.45rem; }
+  .fun-dock-btn { width: 46px; height: 46px; font-size: 0.85rem; }
+  .to-top { right: 0.8rem; }
 }

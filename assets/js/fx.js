@@ -135,11 +135,46 @@
     }
   }
 
+  /* ---------------- 点击彩花 ---------------- */
+  var sparks = [];
+  function spawnSparks(x, y) {
+    for (var i = 0; i < 16; i++) {
+      var a = Math.random() * Math.PI * 2;
+      var sp = 0.6 + Math.random() * 2.8;
+      sparks.push({
+        x: x, y: y,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - 0.6,
+        size: 1 + Math.random() * 2.4,
+        color: PALETTE[(Math.random() * PALETTE.length) | 0],
+        life: 0,
+        max: 26 + Math.random() * 22,
+      });
+    }
+  }
+  function drawSparks() {
+    for (var i = sparks.length - 1; i >= 0; i--) {
+      var s = sparks[i];
+      s.life++;
+      s.vy += 0.1;
+      s.x += s.vx;
+      s.y += s.vy;
+      if (s.life > s.max) { sparks.splice(i, 1); continue; }
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size * (1 - s.life / s.max / 2), 0, Math.PI * 2);
+      ctx.fillStyle = s.color;
+      ctx.globalAlpha = 1 - s.life / s.max;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function loop(t) {
     if (!running) return;
     if (!ctx) return;
     ctx.clearRect(0, 0, W, H);
     drawParticles(t);
+    drawSparks();
     drawConfetti();
     requestAnimationFrame(loop);
   }
@@ -159,6 +194,12 @@
   window.addEventListener("mousemove", function (e) {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
+  }, { passive: true });
+  // 点击彩花：在空白/卡片区域点击时绽放；控件与弹窗内不触发
+  window.addEventListener("pointerdown", function (e) {
+    if (REDUCE || !ctx || e.button !== 0) return;
+    if (e.target.closest("input, textarea, select, button, a, .overlay, .fun-dock, .to-top")) return;
+    spawnSparks(e.clientX, e.clientY);
   }, { passive: true });
   document.addEventListener("mouseleave", function () {
     mouse.x = -9999;
