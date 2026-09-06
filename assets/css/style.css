@@ -985,6 +985,7 @@ html.js .reveal[data-d="3"] { transition-delay: 0.16s; }
   backdrop-filter: blur(6px);
   animation: fadeIn 0.25s var(--ease);
 }
+.overlay[hidden] { display: none; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .panel {
   width: min(430px, 100%);
