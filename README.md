@@ -2,7 +2,7 @@
 
 EquinoxX 的个人主页（PhantomBlog）· 托管于 GitHub Pages · 自定义域名 `equinoxx.tech`
 
-无框架、无外部依赖，国内可直接访问。
+纯 HTML / CSS / JS 手写，无框架、无外部依赖，国内可直接访问。
 
 ## 目录结构
 

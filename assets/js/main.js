@@ -1,6 +1,6 @@
 /* =========================================================
-   EquinoxX · PhantomBlog — 前端脚本
-   主题切换 / 移动导航 / 滚动效果 / JSON 内容渲染
+   main.js — 页面逻辑：主题 / 导航 / 滚动 / 文章 / 匿名问答 / 访客计数
+   问答与计数走同源 /api（服务器版）；GitHub Pages 备份自动降级为只读
    ========================================================= */
 (function () {
   "use strict";
@@ -9,11 +9,14 @@
 
   /* ---------- 主题 ---------- */
   var themeBtn = document.getElementById("themeBtn");
+  function applyTheme(next) {
+    doc.setAttribute("data-theme", next);
+    try { localStorage.setItem("eqx-theme", next); } catch (e) {}
+    window.dispatchEvent(new Event("eqxtheme"));
+  }
   if (themeBtn) {
     themeBtn.addEventListener("click", function () {
-      var next = doc.getAttribute("data-theme") === "light" ? "dark" : "light";
-      doc.setAttribute("data-theme", next);
-      try { localStorage.setItem("eqx-theme", next); } catch (e) {}
+      applyTheme(doc.getAttribute("data-theme") === "light" ? "dark" : "light");
     });
   }
 
@@ -35,7 +38,7 @@
     });
   }
 
-  /* ---------- 滚动：导航底色 / 回到顶部 ---------- */
+  /* ---------- 滚动 ---------- */
   var header = document.getElementById("siteHeader");
   var toTop = document.getElementById("toTop");
   function onScroll() {
@@ -51,6 +54,14 @@
     });
   }
 
+  /* ---------- 彩带 ---------- */
+  function rain() { if (window.FX) window.FX.rain(2.6); }
+  function burstAtCenter() { if (window.FX) window.FX.burst(window.innerWidth / 2, window.innerHeight * 0.5, 80); }
+  var confettiBtn = document.getElementById("confettiBtn");
+  var confettiCta = document.getElementById("confettiCta");
+  if (confettiBtn) confettiBtn.addEventListener("click", rain);
+  if (confettiCta) confettiCta.addEventListener("click", rain);
+
   /* ---------- 滚动显现动画 ---------- */
   var revealObserver = null;
   if ("IntersectionObserver" in window) {
@@ -63,7 +74,7 @@
           }
         });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
+      { threshold: 0.1, rootMargin: "0px 0px -6% 0px" }
     );
     document.querySelectorAll(".reveal").forEach(function (el) {
       revealObserver.observe(el);
@@ -89,49 +100,6 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
   }
-  function pad(n) {
-    return String(n).padStart(2, "0");
-  }
-
-  /* ---------- 文章渲染 ---------- */
-  var postList = document.getElementById("postList");
-  function renderPosts(list) {
-    if (!postList) return;
-    if (!Array.isArray(list) || list.length === 0) {
-      postList.innerHTML =
-        '<p class="state-note">还没有文章——第一篇正在路上。</p>';
-      return;
-    }
-    // 按日期从新到旧
-    var sorted = list
-      .slice()
-      .sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); });
-    var html = "";
-    sorted.forEach(function (p, i) {
-      html +=
-        '<article class="post-card reveal" data-d="' + (i % 3 + 1) + '">' +
-          '<span class="post-no">' + pad(i + 1) + "</span>" +
-          '<div class="post-meta">' +
-            "<time>" + esc(p.date || "日期待定") + "</time>" +
-            '<span class="dot">·</span>' +
-            '<span class="post-cat">' + esc(p.category || "未分类") + "</span>" +
-          "</div>" +
-          '<h3 class="post-title">' + esc(p.title || "无标题") + "</h3>" +
-          '<p class="post-desc">' + esc(p.desc || "") + "</p>" +
-        "</article>";
-    });
-    postList.innerHTML = html;
-    observeReveals(postList);
-  }
-  function postFail(err) {
-    console.error("文章加载失败:", err);
-    if (postList)
-      postList.innerHTML =
-        '<p class="state-note">文章加载失败……请在 data/posts.json 中检查内容格式。</p>';
-  }
-
-  /* ---------- 留言渲染 ---------- */
-  var commentList = document.getElementById("commentList");
   var PALETTE = [
     ["#6366f1", "#8b5cf6"],
     ["#0ea5e9", "#22d3ee"],
@@ -140,57 +108,195 @@
     ["#10b981", "#34d399"],
     ["#8b5cf6", "#d946ef"],
   ];
-  function hashName(s) {
+  function hashStr(s) {
     var h = 0;
     s = String(s || "");
-    for (var i = 0; i < s.length; i++) {
-      h = (h * 31 + s.charCodeAt(i)) >>> 0;
-    }
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
     return h;
   }
-  function renderComments(list) {
-    if (!commentList) return;
-    if (!Array.isArray(list) || list.length === 0) {
-      commentList.innerHTML =
-        '<p class="state-note">还没有留言，来抢个沙发吧～</p>';
-      return;
-    }
-    var html = "";
-    list.forEach(function (c) {
-      var name = esc(c.username || "匿名用户");
-      var colors = PALETTE[hashName(name) % PALETTE.length];
-      html +=
-        '<div class="comment-card reveal">' +
-          '<div class="comment-head">' +
-            '<span class="c-avatar" style="background:linear-gradient(135deg,' +
-              colors[0] + "," + colors[1] + ')">' +
-              esc((c.username || "匿").slice(0, 1)) +
-            "</span>" +
-            '<div><div class="c-name">' + name + "</div>" +
-            '<div class="c-date">' + esc(c.date || "") + "</div></div>" +
-          "</div>" +
-          '<p class="c-text">' + esc(c.content || "") + "</p>" +
-        "</div>";
-    });
-    commentList.innerHTML = html;
-    observeReveals(commentList);
-  }
-  function commentFail(err) {
-    console.error("留言加载失败:", err);
-    if (commentList)
-      commentList.innerHTML =
-        '<p class="state-note">留言加载失败……请在 data/comments.json 中检查内容格式。</p>';
+  function gradFor(key) {
+    var c = PALETTE[hashStr(key) % PALETTE.length];
+    return "linear-gradient(135deg," + c[0] + "," + c[1] + ")";
   }
 
-  function loadJSON(url, ok, fail) {
-    fetch(url, { cache: "no-store" })
+  /* ---------- 打字机文案 ---------- */
+  var typeEl = document.getElementById("typeText");
+  var LINES = [
+    "白天写代码，晚上开镜 🎮",
+    "Apex / COD / CS2 / Deadlock 常驻选手",
+    "在这里写点代码笔记、游戏心得和碎碎念",
+    "欢迎光临我的 PhantomBlog 👋",
+  ];
+  if (typeEl) {
+    var li = 0, ci = 0, deleting = false;
+    (function tick() {
+      var line = LINES[li];
+      if (!deleting) {
+        ci++;
+        if (ci >= line.length) { deleting = true; setTimeout(tick, 2100); return; }
+      } else {
+        ci--;
+        if (ci <= 0) { deleting = false; li = (li + 1) % LINES.length; setTimeout(tick, 300); return; }
+      }
+      typeEl.textContent = line.slice(0, ci);
+      setTimeout(tick, deleting ? 34 : 62);
+    })();
+  }
+
+  /* ---------- 文章渲染（空态） ---------- */
+  var postList = document.getElementById("postList");
+  if (postList) {
+    postList.innerHTML =
+      '<p class="state-note">还没有文章——第一篇正在路上 🚧</p>';
+  }
+
+  /* =========================================================
+     匿名问答
+     ========================================================= */
+  var API = "./api";
+  var qaList = document.getElementById("qaList");
+  var qaForm = document.getElementById("qaForm");
+  var qaName = document.getElementById("qaName");
+  var qaContent = document.getElementById("qaContent");
+  var qaSend = document.getElementById("qaSend");
+  var qaStatus = document.getElementById("qaStatus");
+  var liveMode = false;
+
+  function qaItemHTML(e, idx) {
+    var name = e.name || "匿名用户";
+    var anon = !!e.anon || !e.name;
+    var letter = anon ? "？" : esc(String(name).slice(0, 1));
+    var key = (e.id != null ? e.id : idx) + ":" + name;
+    return (
+      '<div class="qa-item reveal" data-d="' + (idx % 3 + 1) + '">' +
+        '<div class="qa-head">' +
+          '<span class="qa-ava" style="background:' + gradFor(key) + '">' + letter + "</span>" +
+          '<span class="qa-name">' + esc(name) + "</span>" +
+          (anon ? '<span class="qa-pill">匿名</span>' : "") +
+          '<span class="qa-date">' + esc(e.date || "") + "</span>" +
+        "</div>" +
+        '<p class="qa-text">' + esc(e.content || "") + "</p>" +
+      "</div>"
+    );
+  }
+  function renderQA(list) {
+    if (!qaList) return;
+    if (!Array.isArray(list) || list.length === 0) {
+      qaList.innerHTML = '<p class="state-note">还没有留言，来问第一个问题吧～</p>';
+      return;
+    }
+    qaList.innerHTML = list.map(qaItemHTML).join("");
+    observeReveals(qaList);
+  }
+  function setStatus(msg, type) {
+    if (!qaStatus) return;
+    qaStatus.textContent = msg || "";
+    qaStatus.className = "qa-status" + (type ? " " + type : "");
+  }
+  function setReadOnly(reason) {
+    liveMode = false;
+    if (qaForm) {
+      [].forEach.call(qaForm.querySelectorAll("input, textarea, button"), function (el) {
+        el.disabled = true;
+      });
+    }
+    setStatus(reason || "只读预览：这是 GitHub Pages 备份，问答请访问主站", "err");
+  }
+
+  // 尝试连接后端 API；失败则读本地 comments.json 只读展示
+  function initQA() {
+    if (!qaList) return;
+    fetch(API + "/qa", { cache: "no-store" })
       .then(function (r) {
         if (!r.ok) throw new Error("HTTP " + r.status);
         return r.json();
       })
-      .then(ok)
-      .catch(fail);
+      .then(function (data) {
+        liveMode = true;
+        renderQA(data.list || []);
+      })
+      .catch(function (err) {
+        console.warn("API 不可用，降级为只读:", err);
+        renderQA([]);
+        fetch("./data/comments.json", { cache: "no-store" })
+          .then(function (r2) { if (!r2.ok) throw 0; return r2.json(); })
+          .then(function (legacy) {
+            var mapped = (Array.isArray(legacy) ? legacy : []).map(function (c) {
+              return { id: "f" + hashStr(c.username + c.date), name: c.username, content: c.content, date: c.date, anon: false };
+            });
+            renderQA(mapped);
+            setReadOnly("这里显示的是 GitHub Pages 备份；去主站 https://equinoxx.tech 可以匿名提问哦");
+          })
+          .catch(function () { setReadOnly(); });
+      });
   }
+
+  if (qaForm) {
+    qaForm.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var content = (qaContent.value || "").trim();
+      if (!content) { setStatus("写点内容再发送呀～", "err"); return; }
+      if (content.length > 500) { setStatus("最多 500 字哦", "err"); return; }
+      if (!liveMode) { setStatus("备份版无法保存，去主站提问吧", "err"); return; }
+      qaSend.disabled = true;
+      qaSend.textContent = "发送中…";
+      setStatus("", "");
+      fetch(API + "/qa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: (qaName.value || "").trim(), content: content }),
+      })
+        .then(function (r) {
+          if (r.status === 429) throw { rate: true };
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          qaContent.value = "";
+          renderQA(data.list || []);
+          setStatus("已悄悄放上去啦 ✨", "ok");
+          burstAtCenter();
+        })
+        .catch(function (err) {
+          setStatus(err && err.rate ? "发得太快啦，休息几秒再试" : "发送失败，稍后再试试", "err");
+        })
+        .finally(function () {
+          qaSend.disabled = false;
+          qaSend.textContent = "发 送 ✦";
+        });
+    });
+  }
+  initQA();
+
+  /* =========================================================
+     访客计数（服务器版；不可用时隐藏徽章）
+     ========================================================= */
+  var badge = document.getElementById("visitBadge");
+  function initVisits() {
+    if (!badge) return;
+    fetch(API + "/visits", { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (v) {
+        var txt = "👀 今日 " + (v.today || 0) + " 人 · 累计 " + (v.total || 0) + " 次访问";
+        badge.innerHTML = "";
+        var parts = txt.split("·");
+        parts.forEach(function (p) {
+          var span = document.createElement("span");
+          span.innerHTML = p.trim();
+          badge.appendChild(span);
+        });
+        badge.hidden = false;
+        // 每次会话只计一次
+        try {
+          if (!sessionStorage.getItem("eqx-v")) {
+            sessionStorage.setItem("eqx-v", "1");
+            fetch(API + "/visits", { method: "POST" }).catch(function () {});
+          }
+        } catch (e) {}
+      })
+      .catch(function () { /* 非服务器环境，保持隐藏 */ });
+  }
+  initVisits();
 
   /* ---------- 复制邮箱 ---------- */
   var copyBtn = document.getElementById("copyBtn");
@@ -199,17 +305,12 @@
   if (copyBtn) {
     copyBtn.addEventListener("click", function () {
       function done(ok) {
-        if (copyLabel) {
-          copyLabel.textContent = ok ? "已复制 ✓" : "复制失败，请手动复制";
-        }
-        setTimeout(function () {
-          if (copyLabel) copyLabel.textContent = "复制邮箱";
-        }, 2000);
+        if (copyLabel) copyLabel.textContent = ok ? "已复制 ✓" : "复制失败，请手动复制";
+        setTimeout(function () { if (copyLabel) copyLabel.textContent = "复制邮箱"; }, 2000);
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(EMAIL).then(function () { done(true); }, function () { done(false); });
       } else {
-        // 老浏览器回退
         try {
           var ta = document.createElement("textarea");
           ta.value = EMAIL;
@@ -220,9 +321,7 @@
           var ok = document.execCommand("copy");
           document.body.removeChild(ta);
           done(ok);
-        } catch (e) {
-          done(false);
-        }
+        } catch (e) { done(false); }
       }
     });
   }
@@ -230,8 +329,4 @@
   /* ---------- 年份 ---------- */
   var yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
-
-  /* ---------- 初始化数据 ---------- */
-  loadJSON("./data/posts.json", renderPosts, postFail);
-  loadJSON("./data/comments.json", renderComments, commentFail);
 })();

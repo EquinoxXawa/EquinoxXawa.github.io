@@ -390,6 +390,34 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   50% { transform: translate(-50%, 9px); }
 }
 
+/* ---------- 特效画布（粒子 / 彩带） ---------- */
+#fx {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+/* 内容层高于画布 */
+.site-header, main, .site-footer, .to-top { position: relative; z-index: 1; }
+html.js .reveal { position: relative; z-index: 1; }
+
+/* ---------- Hero 打字机 ---------- */
+.hero-type {
+  margin-top: 0.9rem;
+  min-height: 2.1em;
+  font-size: clamp(0.95rem, 2.6vw, 1.12rem);
+  font-weight: 500;
+  color: var(--text-soft);
+  letter-spacing: 0.01em;
+}
+.cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--accent-2);
+  animation: blink 1.05s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
 /* ---------- 通用段落区 ---------- */
 .section { padding: 5.2rem 0 1.4rem; }
 .section + .section { padding-top: 3.6rem; }
@@ -685,4 +713,123 @@ html.js .reveal[data-d="3"] { transition-delay: 0.16s; }
     transition-duration: 0.001s !important;
   }
   html.js .reveal { opacity: 1; transform: none; }
+}
+
+/* =========================================================
+   匿名问答
+   ========================================================= */
+.qa-form {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 1.3rem 1.5rem;
+  margin-bottom: 1.8rem;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.qa-inputs { margin-bottom: 0.75rem; }
+.qa-inputs input {
+  width: 100%;
+  max-width: 20rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--chip-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  padding: 0.55rem 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.qa-inputs input::placeholder, .qa-form textarea::placeholder { color: var(--muted); }
+.qa-inputs input:focus, .qa-form textarea:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+.qa-form textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 96px;
+  font: inherit;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--chip-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  padding: 0.75rem 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.qa-submit-row {
+  margin-top: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.qa-status {
+  font-size: 0.86rem;
+  color: var(--muted);
+  min-height: 1.3em;
+}
+.qa-status.ok { color: #34d399; }
+.qa-status.err { color: var(--danger); }
+
+.qa-list { display: grid; gap: 0.9rem; max-width: 46rem; }
+.qa-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 1.1rem 1.3rem;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: transform 0.3s var(--ease), border-color 0.3s;
+}
+.qa-item:hover { transform: translateY(-2px); border-color: var(--line-strong); }
+.qa-item-new { animation: qaIn 0.5s var(--ease); }
+@keyframes qaIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+.qa-head { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+.qa-ava {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #fff;
+}
+.qa-name { font-weight: 700; font-size: 0.95rem; }
+.qa-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--accent-2);
+  border: 1px solid color-mix(in srgb, var(--accent-2) 45%, transparent);
+  padding: 0.08rem 0.55rem;
+  border-radius: var(--radius-full);
+}
+.qa-date { margin-left: auto; font-size: 0.76rem; color: var(--muted); font-family: var(--font-mono); }
+.qa-text { margin-top: 0.6rem; color: var(--text-soft); font-size: 0.95rem; word-break: break-word; white-space: pre-wrap; }
+
+/* ---------- 访客徽章 ---------- */
+.visit-badge {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.visit-badge[hidden] { display: none; }
+.visit-badge b { color: var(--accent); font-weight: 700; }
+
+@media (max-width: 540px) {
+  .qa-form { padding: 1.1rem 1.05rem; }
+  .qa-item { padding: 1rem 1.05rem; }
 }
