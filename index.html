@@ -195,9 +195,19 @@
             <input id="qaName" type="text" maxlength="20" placeholder="昵称（可选，默认匿名）" autocomplete="off" />
           </div>
           <textarea id="qaContent" rows="3" maxlength="500" required placeholder="写点什么吧……（最多 500 字）"></textarea>
+          <div class="verify" id="verify" role="group" aria-label="人机验证">
+            <div class="verify-track" id="verifyTrack">
+              <div class="verify-fill" id="verifyFill"></div>
+              <span class="verify-msg" id="verifyMsg">按住箭头，向右滑动完成验证</span>
+              <div class="verify-thumb" id="verifyThumb" role="button" tabindex="0" aria-label="向右滑动完成验证">
+                <svg class="verify-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                <svg class="verify-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              </div>
+            </div>
+          </div>
           <div class="qa-submit-row">
             <p class="qa-status" id="qaStatus" role="status" aria-live="polite"></p>
-            <button class="btn btn-primary" id="qaSend" type="submit">发送</button>
+            <button class="btn btn-primary" id="qaSend" type="submit" disabled>发送</button>
           </div>
         </form>
 

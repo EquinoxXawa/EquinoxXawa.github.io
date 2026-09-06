@@ -238,7 +238,7 @@
   // 点击彩花：在空白/卡片区域点击时绽放；控件与弹窗内不触发
   window.addEventListener("pointerdown", function (e) {
     if (REDUCE || !ctx || e.button !== 0) return;
-    if (e.target.closest("input, textarea, select, button, a, .overlay, .fun-dock, .to-top")) return;
+    if (e.target.closest("input, textarea, select, button, a, .overlay, .fun-dock, .to-top, .verify")) return;
     spawnSparks(e.clientX, e.clientY);
   }, { passive: true });
   document.addEventListener("mouseleave", function () {

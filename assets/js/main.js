@@ -153,6 +153,15 @@
   var adminLock = document.getElementById("adminLock");
   var adminStatus = document.getElementById("adminStatus");
 
+  /* 人机验证滑块 */
+  var verifyBox = document.getElementById("verify");
+  var verifyTrack = document.getElementById("verifyTrack");
+  var verifyFill = document.getElementById("verifyFill");
+  var verifyMsg = document.getElementById("verifyMsg");
+  var verifyThumb = document.getElementById("verifyThumb");
+  var challenge = null;
+  var verifyOk = false;
+
   var liveMode = false;
   var adminToken = null;
 
@@ -180,6 +189,7 @@
     }
     if (adminToggle) adminToggle.hidden = true;
     if (adminPanel) adminPanel.hidden = true;
+    if (verifyBox) verifyBox.hidden = true;
     setStatus(qaStatus, reason || "只读预览：这是 GitHub Pages 备份，互动请访问主站", "err");
   }
 
@@ -307,21 +317,34 @@
       if (!content) { setStatus(qaStatus, "写点内容再发送吧", "err"); return; }
       if (content.length > 500) { setStatus(qaStatus, "最多 500 字哦", "err"); return; }
       if (!liveMode) { setStatus(qaStatus, "备份版无法保存，去主站提问吧", "err"); return; }
+      if (!verifyOk || !challenge) { setStatus(qaStatus, "请先完成人机验证（滑动右侧箭头）", "err"); return; }
       qaSend.disabled = true;
       qaSend.textContent = "发送中…";
       setStatus(qaStatus, "", "");
-      api("POST", "/qa", { name: (qaName.value || "").trim(), content: content })
+      api("POST", "/qa", {
+        name: (qaName.value || "").trim(),
+        content: content,
+        challenge: challenge,
+      })
         .then(function (j) {
           qaContent.value = "";
           renderQA(j.list || []);
           setStatus(qaStatus, "已悄悄放上去啦", "ok");
           burstCenter();
+          resetVerify();      // 发送成功：收回按钮，为下一条重新验证
+          fetchChallenge();   // 预取下一条验证码
         })
         .catch(function (err) {
-          setStatus(qaStatus, err.status === 429 ? "发得太快啦，休息几秒再试" : "发送失败，稍后再试试", "err");
+          if (err.status === 403) {
+            setStatus(qaStatus, "验证已过期，请重新滑动一次", "err");
+            resetVerify();
+            fetchChallenge();
+          } else {
+            setStatus(qaStatus, err.status === 429 ? "发得太快啦，休息几秒再试" : "发送失败，稍后再试试", "err");
+            qaSend.disabled = false; // 网络类错误保留按钮，方便重试
+          }
         })
         .finally(function () {
-          qaSend.disabled = false;
           qaSend.textContent = "发送";
         });
     });
@@ -424,7 +447,97 @@
     });
   }
 
+  /* ---------- 人机验证滑块控制 ---------- */
+  function setVerifyIdle() {
+    verifyOk = false;
+    if (qaSend) qaSend.disabled = true;
+    if (verifyBox) verifyBox.classList.remove("done", "dragging");
+    if (verifyThumb) verifyThumb.style.left = "";
+    if (verifyFill) verifyFill.style.width = "0px";
+    if (verifyMsg) verifyMsg.textContent = "按住箭头，向右滑动完成验证";
+  }
+  function resetVerify() {
+    challenge = null;
+    setVerifyIdle();
+  }
+  function successVerify() {
+    if (!challenge) return;
+    verifyOk = true;
+    if (verifyThumb) verifyThumb.style.left = "";
+    if (verifyFill) verifyFill.style.width = "0px";
+    if (verifyBox) verifyBox.classList.remove("dragging");
+    if (verifyBox) verifyBox.classList.add("done");
+    if (verifyMsg) verifyMsg.textContent = "验证通过";
+    if (qaSend) qaSend.disabled = false;
+    if (window.FX) window.FX.burst(window.innerWidth / 2, window.innerHeight * 0.5, 22);
+  }
+  function fetchChallenge() {
+    if (!verifyBox) return;
+    fetch(API + "/challenge", { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (j) {
+        challenge = j.c || null;
+        verifyBox.hidden = false;
+        setVerifyIdle();
+      })
+      .catch(function () {
+        challenge = null;
+        verifyBox.hidden = true;
+      });
+  }
+
+  function initVerify() {
+    if (!verifyTrack || !verifyThumb) return;
+    var dragging = false;
+    var startOffset = 0;
+
+    function maxLeft() { return verifyTrack.clientWidth - verifyThumb.clientWidth - 8; }
+    function applyPos(pos) {
+      var p = Math.max(4, Math.min(maxLeft(), pos));
+      verifyThumb.style.left = p + "px";
+      verifyFill.style.width = (p + verifyThumb.clientWidth * 0.6) + "px";
+      return p;
+    }
+    verifyTrack.addEventListener("pointerdown", function (e) {
+      if (verifyOk || !challenge) return;
+      e.preventDefault();
+      dragging = true;
+      verifyBox.classList.add("dragging");
+      verifyThumb.setPointerCapture(e.pointerId);
+      var r = verifyThumb.getBoundingClientRect();
+      startOffset = e.clientX - r.left;
+      applyPos(e.clientX - verifyTrack.getBoundingClientRect().left - startOffset);
+    });
+    verifyTrack.addEventListener("pointermove", function (e) {
+      if (!dragging) return;
+      var p = applyPos(e.clientX - verifyTrack.getBoundingClientRect().left - startOffset);
+      var fin = maxLeft();
+      if (p >= fin - 6) { finishDrag(true); }
+    });
+    function finishDrag(win) {
+      if (!dragging) return;
+      dragging = false;
+      verifyBox.classList.remove("dragging");
+      if (win && challenge) {
+        successVerify();
+      } else {
+        setVerifyIdle();
+        if (!verifyOk && qaStatus) setStatus(qaStatus, "", "");
+      }
+    }
+    verifyTrack.addEventListener("pointerup", function () { finishDrag(false); });
+    verifyTrack.addEventListener("pointercancel", function () { finishDrag(false); });
+    verifyThumb.addEventListener("keydown", function (e) {
+      if ((e.key === "Enter" || e.key === " ") && challenge && !verifyOk) {
+        e.preventDefault();
+        successVerify();
+      }
+    });
+    fetchChallenge();
+  }
+
   initQA();
+  initVerify();
 
   /* =========================================================
      访客计数
