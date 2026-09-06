@@ -72,6 +72,11 @@
     </div>
   </header>
 
+  <!-- 跑马灯 -->
+  <div class="ticker-wrap" aria-hidden="true">
+    <div class="ticker"><div class="ticker-track" id="tickerTrack"></div></div>
+  </div>
+
   <main id="main">
     <!-- Hero -->
     <section class="hero" id="home">
@@ -113,6 +118,7 @@
             撒彩带
           </button>
         </div>
+        <p class="visit-badge" id="visitBadge" hidden></p>
       </div>
       <a class="scroll-cue" href="#about" aria-label="向下滚动查看关于我">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
@@ -138,11 +144,17 @@
           </p>
           <p>页面右下角有一些小玩具，可以测手速、抽运势、听一言。想聊点什么，就去下面的<strong>匿名问答</strong>留言，我会回复的。</p>
         </div>
+        <ul class="fact-grid reveal">
+          <li><span class="fact-k">常居</span><span class="fact-v">辽宁 · 中国</span></li>
+          <li><span class="fact-k">白天</span><span class="fact-v">写代码</span></li>
+          <li><span class="fact-k">晚上</span><span class="fact-v">FPS 上分</span></li>
+          <li><span class="fact-k">签名</span><span class="fact-v">上分靠技术，人生靠心态</span></li>
+        </ul>
       </div>
     </section>
 
     <!-- 匿名问答 -->
-    <section class="section" id="qa">
+    <section class="section" id="qa" data-sprinkle="1">
       <div class="wrap">
         <header class="sec-head reveal">
           <p class="eyebrow">Q&amp;A</p>
@@ -182,7 +194,7 @@
   </main>
 
   <!-- 联系 / 页脚 -->
-  <footer class="site-footer" id="contact">
+  <footer class="site-footer" id="contact" data-sprinkle="1">
     <div class="wrap">
       <p class="eyebrow reveal">Contact</p>
       <h2 class="reveal">联系我</h2>
@@ -209,7 +221,6 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 7.5l9 6 9-6"/></svg>
         </a></li>
       </ul>
-      <p class="visit-badge" id="visitBadge" hidden aria-hidden="true"></p>
       <p class="copyright">© <span id="year">2026</span> EquinoxX · PhantomBlog</p>
     </div>
   </footer>

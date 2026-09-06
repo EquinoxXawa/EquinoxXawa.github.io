@@ -17,6 +17,7 @@
   if (themeBtn) {
     themeBtn.addEventListener("click", function () {
       applyTheme(doc.getAttribute("data-theme") === "light" ? "dark" : "light");
+      if (window.FX) window.FX.rain(1.1); // 换肤小彩带
     });
   }
 
@@ -70,9 +71,14 @@
         if (en.isIntersecting) {
           en.target.classList.add("in");
           revealObserver.unobserve(en.target);
+          // 自动特效：带 data-sprinkle 的区块首次进入视野时放一小簇彩花
+          if (en.target.dataset && en.target.dataset.sprinkle && window.FX) {
+            var r = en.boundingClientRect;
+            window.FX.burst(r.left + r.width / 2, Math.min(r.top + 26, window.innerHeight * 0.82), 24);
+          }
         }
       });
-    }, { threshold: 0.1, rootMargin: "0px 0px -6% 0px" });
+    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
     document.querySelectorAll(".reveal").forEach(function (el) { revealObserver.observe(el); });
   } else {
     document.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("in"); });
@@ -478,4 +484,33 @@
   /* ---------- 年份 ---------- */
   var yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+  /* ---------- 跑马灯 ---------- */
+  var tickerTrack = document.getElementById("tickerTrack");
+  var TICKER = [
+    "欢迎光临 PhantomBlog",
+    "匿名问答在线，站长会挑着回复",
+    "右下角有玩具：手速测试、今日运势、一言",
+    "到处点点有惊喜，彩花流星自动冒",
+    "右上角可以切换深色 / 浅色主题",
+    "看完不留言的，晚上排位连跪（不是）",
+  ];
+  if (tickerTrack) {
+    var halfHtml = TICKER.map(function (t) {
+      return "<span>" + esc(t) + '</span><span class="ticker-sep">·</span>';
+    }).join("");
+    tickerTrack.innerHTML = halfHtml + halfHtml;
+  }
+
+  /* ---------- 进站自动小彩带（一次性） ---------- */
+  setTimeout(function () {
+    if (window.FX) window.FX.rain(1.7);
+  }, 2000);
+
+  /* ---------- 让带 data-sprinkle 的区块在进入视野时触发彩花 ---------- */
+  if (revealObserver) {
+    document.querySelectorAll("[data-sprinkle]").forEach(function (el) {
+      revealObserver.observe(el);
+    });
+  }
 })();

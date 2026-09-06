@@ -169,12 +169,51 @@
     ctx.globalAlpha = 1;
   }
 
+  /* ---------------- 自动流星 ---------------- */
+  var stars = [];
+  var nextStar = 0;
+  function spawnStar(t) {
+    stars.push({
+      x: Math.random() * (W + 160) - 80,
+      y: -12,
+      vx: 3.5 + Math.random() * 4,
+      vy: 2.2 + Math.random() * 2.6,
+      life: 0,
+      max: 46 + Math.random() * 30,
+    });
+    nextStar = t + 7000 + Math.random() * 9000;
+  }
+  function drawStars() {
+    for (var i = stars.length - 1; i >= 0; i--) {
+      var s = stars[i];
+      s.life++;
+      s.x += s.vx;
+      s.y += s.vy;
+      if (s.life > s.max || s.y > H + 30) { stars.splice(i, 1); continue; }
+      var fade = Math.sin((s.life / s.max) * Math.PI);
+      var tx = s.x - s.vx * 11;
+      var ty = s.y - s.vy * 11;
+      var g = ctx.createLinearGradient(s.x, s.y, tx, ty);
+      g.addColorStop(0, "rgba(" + accentRGB[0] + "," + accentRGB[1] + "," + accentRGB[2] + "," + (0.85 * fade).toFixed(3) + ")");
+      g.addColorStop(1, "rgba(" + accentRGB[0] + "," + accentRGB[1] + "," + accentRGB[2] + ",0)");
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1.6;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(tx, ty);
+      ctx.stroke();
+    }
+  }
+
   function loop(t) {
     if (!running) return;
     if (!ctx) return;
+    if (t > nextStar && stars.length < 2) spawnStar(t);
     ctx.clearRect(0, 0, W, H);
     drawParticles(t);
     drawSparks();
+    drawStars();
     drawConfetti();
     requestAnimationFrame(loop);
   }
@@ -184,6 +223,7 @@
     sizeCanvas();
     seedParticles();
     running = true;
+    nextStar = 1500 + Math.random() * 2500; // 入场后不久来第一颗流星
     requestAnimationFrame(loop);
   }
   window.addEventListener("resize", function () {

@@ -13,7 +13,7 @@
   --radius-m: 16px;
   --radius-l: 22px;
   --radius-full: 999px;
-  --container: 1024px;
+  --container: 1120px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --shadow-pop: 0 18px 50px -18px rgba(0, 0, 0, 0.35);
   --nav-h: 64px;
@@ -66,6 +66,7 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--nav-h) + 12px);
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -426,7 +427,7 @@ html.js .reveal { position: relative; z-index: 1; }
 .section { padding: 5.2rem 0 1.4rem; }
 .section + .section { padding-top: 3.6rem; }
 
-.sec-head { margin-bottom: 2.2rem; }
+.sec-head { margin-bottom: 2.2rem; text-align: center; }
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -442,20 +443,54 @@ html.js .reveal { position: relative; z-index: 1; }
   letter-spacing: -0.01em;
   line-height: 1.25;
 }
-.sec-tip { margin-top: 0.6rem; color: var(--muted); font-size: 0.92rem; max-width: 42rem; }
+.sec-tip { margin: 0.6rem auto 0; color: var(--muted); font-size: 0.92rem; max-width: 44rem; }
 
-.about-body p + p { margin-top: 0.9rem; }
 .about-body {
-  max-width: 44rem;
+  margin-inline: auto;
+  max-width: 52rem;
   color: var(--text-soft);
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius-l);
-  padding: 1.7rem 1.9rem;
+  padding: 1.9rem 2.2rem;
+  text-align: center;
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
+.about-body p + p { margin-top: 0.9rem; }
 .about-body strong { color: var(--text); font-weight: 700; }
+
+/* About 信息卡 */
+.fact-grid {
+  margin: 1.2rem auto 0;
+  max-width: 52rem;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.9rem;
+}
+.fact-grid li {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 1.05rem 1.1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: transform 0.3s var(--ease), border-color 0.3s, background 0.3s;
+}
+.fact-grid li:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); background: var(--card-hover); }
+.fact-k {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.fact-v { font-weight: 700; color: var(--text); }
 
 /* ---------- 文章卡片 ---------- */
 .post-list { display: grid; gap: 1rem; }
@@ -839,15 +874,67 @@ html.js .reveal[data-d="3"] { transition-delay: 0.16s; }
 }
 
 /* =========================================================
+   跑马灯 + 整体居中补强 + 手机强化
+   ========================================================= */
+.ticker-wrap {
+  overflow: hidden;
+  background: var(--grad-soft);
+  border-bottom: 1px solid var(--line);
+}
+.ticker { overflow: hidden; white-space: nowrap; }
+.ticker-track {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 0.52rem 0;
+  animation: tickerMove 30s linear infinite;
+  will-change: transform;
+}
+.ticker-track span { display: inline-block; font-size: 0.85rem; color: var(--text-soft); }
+.ticker-sep { color: var(--accent-2); padding: 0 0.85rem; }
+@keyframes tickerMove {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.qa-form { max-width: 52rem; margin-inline: auto; }
+.qa-list { margin-inline: auto; }
+.hero .visit-badge { margin-top: 1.7rem; }
+
+/* 手机强化 */
+@media (max-width: 640px) {
+  .fact-grid { grid-template-columns: repeat(2, 1fr); }
+  .about-body { padding: 1.5rem 1.3rem; }
+  .ticker-track { padding: 0.46rem 0; }
+  .ticker-track span { font-size: 0.78rem; }
+  .overlay { padding: 0.7rem; }
+  .panel { width: min(96vw, 460px); max-height: 84svh; border-radius: 18px; }
+  .panel-body { padding: 1rem; }
+  .fun-dock-btn, .to-top { width: 46px; height: 46px; }
+  .hero-actions .btn { min-height: 44px; }
+  .btn { min-height: 42px; }
+  input, textarea { font-size: 16px; } /* 防 iOS 聚焦缩放 */
+}
+
+@media (max-width: 380px) {
+  .fact-grid { grid-template-columns: 1fr 1fr; }
+  .fact-grid li { padding: 0.85rem 0.6rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+}
+
+/* =========================================================
    问答：工具栏 / 管理员 / 回复 / 删除
    ========================================================= */
 .qa-toolbar {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
   flex-wrap: wrap;
   margin: 0.4rem 0 1.4rem;
+  text-align: center;
 }
 .btn-sm { padding: 0.42rem 1rem; font-size: 0.86rem; }
 

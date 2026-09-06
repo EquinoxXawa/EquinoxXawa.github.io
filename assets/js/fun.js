@@ -120,7 +120,7 @@
   }
   function showReflex() {
     var html =
-      '<p class="fun-tip">点击下方方块开始，等它变绿后立刻再点一次。越快越好。</p>' +
+      '<p class="fun-tip">点击方块开始，方块会在 1-5 秒内随机变绿，变绿后立刻再点一次。越快越好。</p>' +
       '<div class="r-box" id="rBox" role="button" tabindex="0">点我开始</div>' +
       '<p class="fun-result" id="rResult"></p>' +
       '<div class="fun-row"><button class="btn btn-primary" id="rRetry" type="button">再来一次</button>' +
@@ -141,8 +141,8 @@
     }
     function start() {
       reset();
-      box.textContent = "等待变绿……";
-      var delay = 1200 + Math.random() * 3000;
+      box.textContent = "等待变绿（1-5 秒随机）……";
+      var delay = 1000 + Math.random() * 4000; // 保证在 5 秒内变绿
       window.__reflexTimer = setTimeout(function () {
         if (state !== "waiting") return;
         state = "ready";
