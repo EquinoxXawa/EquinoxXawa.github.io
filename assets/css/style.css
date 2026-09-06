@@ -483,7 +483,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---------- 留言板 ---------- */
 .comment-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 1rem;
 }
 .comment-card {
@@ -645,6 +645,7 @@ html.js .reveal[data-d="3"] { transition-delay: 0.16s; }
 /* ---------- 响应式 ---------- */
 @media (max-width: 860px) {
   .nav-links { display: none; }
+  .nav-actions { margin-left: auto; }
   .hamburger { display: grid; }
   .section { padding: 4.2rem 0 0.6rem; }
   .hero { min-height: 92svh; }
@@ -661,6 +662,18 @@ html.js .reveal[data-d="3"] { transition-delay: 0.16s; }
   .post-no { display: none; }
   .about-body { padding: 1.4rem 1.35rem; }
   .contact-card { padding: 1.1rem 1.2rem; }
+}
+
+/* 超小屏（≤400px）细节收紧 */
+@media (max-width: 400px) {
+  .hero { padding-inline: 1rem; }
+  .hero-actions .btn { padding: 0.58rem 1rem; font-size: 0.9rem; }
+  .hero-actions { gap: 0.5rem; }
+  .chips { gap: 0.4rem; }
+  .contact-mail { font-size: 1.02rem; }
+  .footer-social a { width: 42px; height: 42px; }
+  .to-top { right: 0.9rem; bottom: 0.9rem; width: 42px; height: 42px; }
+  .contact-card { gap: 0.6rem; }
 }
 
 /* 减少动效偏好 */
