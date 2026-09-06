@@ -154,6 +154,7 @@
      匿名问答
      ========================================================= */
   var API = "./api";
+  var MAIN_URL = "http://103.236.97.213:38090"; // 服务器主站（域名备案后可换回 https://equinoxx.tech）
   var qaList = document.getElementById("qaList");
   var qaForm = document.getElementById("qaForm");
   var qaName = document.getElementById("qaName");
@@ -225,7 +226,7 @@
               return { id: "f" + hashStr(c.username + c.date), name: c.username, content: c.content, date: c.date, anon: false };
             });
             renderQA(mapped);
-            setReadOnly("这里显示的是 GitHub Pages 备份；去主站 https://equinoxx.tech 可以匿名提问哦");
+            setReadOnly("这里是 GitHub Pages 备份（只读）；到主站 " + MAIN_URL + " 可以匿名提问互动哦");
           })
           .catch(function () { setReadOnly(); });
       });

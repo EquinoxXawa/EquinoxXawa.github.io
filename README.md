@@ -1,32 +1,44 @@
-# EquinoxX.github.io
+# EquinoxX · PhantomBlog
 
-EquinoxX 的个人主页（PhantomBlog）· 托管于 GitHub Pages · 自定义域名 `equinoxx.tech`
+EquinoxX 的个人主页（PhantomBlog）。
 
-纯 HTML / CSS / JS 手写，无框架、无外部依赖，国内可直接访问。
+- **主站（自托管）**：`http://103.236.97.213:38090` —— 匿名问答、访客计数等动态功能
+  - 域名 `equinoxx.tech` 原指向本站；因服务器为境内 NAT 且未做 ICP 备案，域名走 HTTP 会被备案系统拦截，备案完成后再启用
+- **GitHub Pages 备份（只读）**：https://EquinoxXawa.github.io
+
+纯 HTML / CSS / JS，无框架。动态功能由服务器上的零依赖 Node API 提供；GitHub Pages 上自动降级为只读展示。
 
 ## 目录结构
 
 ```
-├── index.html              # 主页（结构 + 文案）
+├── index.html              # 主页
 ├── assets/
-│   ├── css/style.css       # 样式（深/浅双主题）
-│   ├── js/main.js          # 交互与数据渲染
-│   └── favicon.svg         # 站点图标
+│   ├── css/style.css       # 样式（深/浅双主题、响应式）
+│   ├── js/main.js          # 页面逻辑：问答/计数 API、主题、导航
+│   ├── js/fx.js            # 特效：粒子背景、打字机、彩带雨
+│   └── favicon.svg
 ├── data/
-│   ├── posts.json          # 文章数据（可编辑）
-│   └── comments.json       # 留言数据（可编辑）
-├── images/avatar.jpg       # 头像
-└── CNAME                   # 自定义域名配置
+│   ├── posts.json          # 文章数据（当前为空）
+│   └── comments.json       # 老留言数据（服务器首启时自动迁移为问答种子）
+├── images/avatar.jpg
+└── deploy/                 # 服务器部署件（不入站运行）
+    ├── server.js           # Node API：匿名问答 + 访客计数
+    ├── equinoxx.tech.conf  # Nginx 站点配置（参考）
+    └── phantomblog-qa.service  # systemd 服务
 ```
 
-## 如何更新内容
+## 功能
 
-- **发文章**：编辑 `data/posts.json`，按现有格式追加一条即可，页面会自动按日期倒序展示。
-- **加留言**：编辑 `data/comments.json`，追加 `{ "username": "名字", "content": "内容", "date": "2026-09-06 10:00" }`。
-- **换头像**：直接覆盖 `images/avatar.jpg`（正方形图片效果最佳）。
+- 深/浅双主题（记忆偏好、跟随系统）
+- 粒子漂浮背景（随主题变色、鼠标轻微排斥）
+- Hero 打字机循环文案
+- 彩带雨 🎉（导航/Hero 按钮触发；提交问答成功自动放彩带）
+- 匿名问答：可匿名提交、服务端持久化（限速 3 条/分钟/IP）
+- 访客计数：今日 + 累计（每次会话计 1）
+- 文章/留言为 JSON 数据驱动
 
-改完后提交推送 `main` 分支，GitHub Pages 会自动重新部署，约 1 分钟内生效。
+## 更新内容
 
-## 自定义域名
-
-仓库根目录的 `CNAME` 指向 `equinoxx.tech`。如更换域名，请同步修改 `CNAME` 与 DNS 记录。
+- **发文章**：编辑 `data/posts.json`。
+- **问答数据**：主站存在服务器 `/var/www/phantomblog/runtime/qa.json`（部署目录见 `deploy/`）。
+- **换头像**：覆盖 `images/avatar.jpg`。
