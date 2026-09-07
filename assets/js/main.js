@@ -627,6 +627,262 @@
     if (window.FX) window.FX.rain(1.7);
   }, 2000);
 
+  /* =========================================================
+     全局吐司 + 按钮涟漪
+     ========================================================= */
+  var toastWrap = document.getElementById("toasts");
+  function toast(msg, type) {
+    if (!toastWrap) return;
+    var el = document.createElement("div");
+    el.className = "toast " + (type || "info");
+    el.innerHTML = "<b>" + (type === "ok" ? "✓" : type === "err" ? "!" : "i") + "</b><span>" + esc(msg) + "</span>";
+    toastWrap.appendChild(el);
+    setTimeout(function () {
+      el.classList.add("out");
+      setTimeout(function () { el.remove(); }, 360);
+    }, 2600);
+  }
+  window.__toast = toast;
+
+  document.addEventListener("pointerdown", function (e) {
+    var b = e.target.closest(".btn");
+    if (!b) return;
+    var r = b.getBoundingClientRect();
+    var d = Math.max(r.width, r.height);
+    var span = document.createElement("span");
+    span.className = "ripple";
+    span.style.width = span.style.height = d + "px";
+    span.style.left = (e.clientX - r.left - d / 2) + "px";
+    span.style.top = (e.clientY - r.top - d / 2) + "px";
+    b.appendChild(span);
+    setTimeout(function () { span.remove(); }, 640);
+  }, { passive: true });
+
+  /* =========================================================
+     邮箱注册登录（百宝箱门控）
+     ========================================================= */
+  var AUTH_KEY = "pb-token";
+  var AEMAIL_KEY = "pb-email";
+  var authOverlay = document.getElementById("authOverlay");
+  var authPanel = authOverlay ? authOverlay.querySelector(".auth-panel") : null;
+  var authForm = document.getElementById("authForm");
+  var authEmailEl = document.getElementById("authEmail");
+  var authPassEl = document.getElementById("authPass");
+  var authPw2El = document.getElementById("authPw2");
+  var authPw2Wrap = document.getElementById("authPw2Wrap");
+  var authErr = document.getElementById("authErr");
+  var authSubmitBtn = document.getElementById("authSubmit");
+  var authTitle = document.getElementById("authTitle");
+  var dockAccount = document.getElementById("dockAccount");
+  var authTabsBox = document.querySelector("#authOverlay .auth-tabs");
+  var authBodyBox = document.querySelector("#authOverlay .auth-body");
+  var authMode = "login";
+  var userToken = null;
+  var userEmail = null;
+  var toolboxPending = false;
+  var savedFormHTML = authBodyBox ? authBodyBox.innerHTML : "";
+
+  function setAuthUI() {
+    if (!dockAccount) return;
+    if (userEmail) {
+      dockAccount.textContent = userEmail.slice(0, 1).toUpperCase();
+      dockAccount.classList.add("is-in");
+      dockAccount.title = userEmail + "（点击管理账户）";
+    } else {
+      dockAccount.textContent = "登录";
+      dockAccount.classList.remove("is-in");
+      dockAccount.title = "登录 / 注册";
+    }
+  }
+  function clearLocal() {
+    userToken = null;
+    userEmail = null;
+    try { localStorage.removeItem(AUTH_KEY); localStorage.removeItem(AEMAIL_KEY); } catch (e) {}
+    setAuthUI();
+  }
+  function closeAuth() {
+    if (authOverlay) { authOverlay.hidden = true; document.body.style.overflow = ""; }
+  }
+  function restoreAuthFormHTML() {
+    if (!authBodyBox || !savedFormHTML) return;
+    authBodyBox.innerHTML = savedFormHTML;
+    authForm = document.getElementById("authForm");
+    authEmailEl = document.getElementById("authEmail");
+    authPassEl = document.getElementById("authPass");
+    authPw2El = document.getElementById("authPw2");
+    authPw2Wrap = document.getElementById("authPw2Wrap");
+    authErr = document.getElementById("authErr");
+    authSubmitBtn = document.getElementById("authSubmit");
+    authTabsBox = document.querySelector("#authOverlay .auth-tabs");
+  }
+  function switchModeUI() {
+    var isReg = authMode === "register";
+    if (authTitle) authTitle.textContent = isReg ? "创建账号" : "欢迎回来";
+    if (authTabsBox) authTabsBox.style.display = "grid";
+    document.querySelectorAll("#authOverlay .auth-tab").forEach(function (t) {
+      t.classList.toggle("is-on", t.getAttribute("data-mode") === authMode);
+    });
+    if (authPw2Wrap) authPw2Wrap.hidden = !isReg;
+    if (authSubmitBtn) {
+      authSubmitBtn.innerHTML = "<span>" + (isReg ? "注 册" : "登 录") + "</span>";
+      authSubmitBtn.disabled = false;
+    }
+    setErr("");
+  }
+  function setErr(msg) {
+    if (authErr) authErr.textContent = msg || "";
+    if (msg && authPanel) {
+      authPanel.classList.remove("auth-shake");
+      void authPanel.offsetWidth;
+      authPanel.classList.add("auth-shake");
+    }
+  }
+  function openAuth(mode) {
+    if (!authOverlay || !authBodyBox) return;
+    authMode = mode === "register" ? "register" : "login";
+    restoreAuthFormHTML();
+    switchModeUI();
+    bindAuthFormEvents();
+    authOverlay.hidden = false;
+    document.body.style.overflow = "hidden";
+    if (authEmailEl) authEmailEl.focus();
+  }
+  document.querySelectorAll(".auth-close").forEach(function (b) {
+    b.addEventListener("click", closeAuth);
+  });
+  if (authOverlay) {
+    authOverlay.addEventListener("click", function (e) { if (e.target === authOverlay) closeAuth(); });
+  }
+
+  function setLoading(on) {
+    if (!authSubmitBtn) return;
+    if (on) {
+      authSubmitBtn.disabled = true;
+      authSubmitBtn.innerHTML = '<span class="spinner"></span>';
+    } else {
+      authSubmitBtn.disabled = false;
+      authSubmitBtn.innerHTML = "<span>" + (authMode === "register" ? "注 册" : "登 录") + "</span>";
+    }
+  }
+  function submitAuth() {
+    var email = (authEmailEl.value || "").trim().toLowerCase();
+    var pw = authPassEl.value || "";
+    setErr("");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { setErr("邮箱格式不太对"); return; }
+    if (pw.length < 6) { setErr("密码至少 6 位"); return; }
+    if (authMode === "register" && pw !== (authPw2El.value || "")) { setErr("两次密码不一致"); return; }
+    setLoading(true);
+    fetch(API + "/auth/" + (authMode === "register" ? "register" : "login"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email, password: pw }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j.ok && j.token) {
+          userToken = j.token;
+          userEmail = j.email;
+          try {
+            localStorage.setItem(AUTH_KEY, j.token);
+            localStorage.setItem(AEMAIL_KEY, j.email);
+          } catch (e) {}
+          setAuthUI();
+          closeAuth();
+          toast(authMode === "register" ? "注册成功，欢迎加入" : "登录成功，欢迎回来", "ok");
+          if (window.FX) window.FX.rain(1.6);
+          if (toolboxPending) { toolboxPending = false; openToolbox(); }
+        } else if (j.error) {
+          setErr(j.error);
+        } else {
+          setErr("邮箱或密码不对，再试试");
+        }
+      })
+      .catch(function () { setErr("连不上服务器（登录功能在主站可用）"); })
+      .finally(function () { setLoading(false); });
+  }
+  function bindAuthFormEvents() {
+    if (authTabsBox) {
+      authTabsBox.addEventListener("click", function (e) {
+        var t = e.target.closest(".auth-tab");
+        if (!t) return;
+        authMode = t.getAttribute("data-mode");
+        switchModeUI();
+      });
+    }
+    var eye = document.querySelector("#authOverlay .auth-eye");
+    if (eye) {
+      eye.addEventListener("click", function () {
+        if (authPassEl) authPassEl.type = authPassEl.type === "password" ? "text" : "password";
+      });
+    }
+    if (authForm) {
+      authForm.addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        submitAuth();
+      });
+    }
+  }
+  function openToolbox() {
+    if (window.__toolbox) window.__toolbox.open(userEmail || "");
+  }
+  function logout() {
+    if (userToken) {
+      fetch(API + "/auth/logout", { method: "POST", headers: { Authorization: "Bearer " + userToken } }).catch(function () {});
+    }
+    clearLocal();
+    closeAuth();
+    toast("已退出登录", "ok");
+  }
+  function initAuth() {
+    bindAuthFormEvents();
+    var t = null, e = null;
+    try { t = localStorage.getItem(AUTH_KEY); e = localStorage.getItem(AEMAIL_KEY); } catch (err) {}
+    if (t && e) {
+      userToken = t;
+      userEmail = e;
+      fetch(API + "/me", { headers: { Authorization: "Bearer " + t } })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (j.ok) { userEmail = j.email; setAuthUI(); }
+          else { clearLocal(); }
+        })
+        .catch(function () { clearLocal(); });
+    }
+    setAuthUI();
+  }
+  // dock 账户 / 宝箱 路由（与 fun.js 的四个按钮共存）
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest(".fun-dock-btn");
+    if (!b) return;
+    var fn = b.getAttribute("data-fun");
+    if (fn === "account") {
+      if (userEmail) showAccountView(); else openAuth("login");
+    } else if (fn === "toolbox") {
+      if (userEmail) openToolbox();
+      else { toolboxPending = true; openAuth("login"); toast("登录后即可打开百宝箱", "info"); }
+    }
+  });
+  function showAccountView() {
+    if (!authBodyBox) return;
+    authBodyBox.innerHTML =
+      '<div class="account-view" style="display:grid;gap:.7rem">' +
+        '<p class="acct-mail" style="font-family:var(--font-mono);color:var(--text-soft);word-break:break-all">' + esc(userEmail || "") + "</p>" +
+        '<button class="btn btn-primary account-open-tb" type="button">打开百宝箱</button>' +
+        '<button class="btn account-logout" type="button">退出登录</button>' +
+        '<p class="auth-hint">登录状态在本浏览器保留 30 天。</p>' +
+      "</div>";
+    if (authTabsBox) authTabsBox.style.display = "none";
+    if (authTitle) authTitle.textContent = "我的账户";
+    authOverlay.hidden = false;
+    document.body.style.overflow = "hidden";
+    authBodyBox.querySelector(".account-open-tb").addEventListener("click", function () {
+      closeAuth();
+      openToolbox();
+    });
+    authBodyBox.querySelector(".account-logout").addEventListener("click", logout);
+  }
+  initAuth();
+
   /* ---------- 让带 data-sprinkle 的区块在进入视野时触发彩花 ---------- */
   if (revealObserver) {
     document.querySelectorAll("[data-sprinkle]").forEach(function (el) {

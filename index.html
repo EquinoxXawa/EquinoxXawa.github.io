@@ -262,6 +262,8 @@
     <button class="fun-dock-btn" data-fun="reflex" type="button">手速</button>
     <button class="fun-dock-btn" data-fun="word" type="button">一言</button>
     <button class="fun-dock-btn" data-fun="confetti" type="button">彩带</button>
+    <button class="fun-dock-btn fun-dock-acct" data-fun="account" type="button" id="dockAccount">登录</button>
+    <button class="fun-dock-btn" data-fun="toolbox" type="button" title="百宝箱（登录后可用）">宝箱</button>
   </div>
 
   <!-- 玩法弹窗 -->
@@ -275,8 +277,73 @@
     </div>
   </div>
 
+  <!-- 登录 / 注册 -->
+  <div class="overlay" id="authOverlay" hidden>
+    <div class="panel auth-panel" role="dialog" aria-modal="true" aria-label="登录或注册">
+      <div class="panel-head">
+        <h3 id="authTitle">欢迎回来</h3>
+        <button class="icon-btn auth-close" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="auth-body">
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab is-on" data-mode="login">登录</button>
+          <button type="button" class="auth-tab" data-mode="register">注册</button>
+        </div>
+        <form id="authForm" novalidate>
+          <label class="auth-field">
+            <span class="auth-label">邮箱</span>
+            <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" />
+          </label>
+          <label class="auth-field">
+            <span class="auth-label">密码</span>
+            <span class="auth-pw-wrap">
+              <input id="authPass" type="password" autocomplete="current-password" placeholder="至少 6 位" />
+              <button type="button" class="auth-eye" id="authEye" aria-label="显示密码">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></svg>
+              </button>
+            </span>
+          </label>
+          <label class="auth-field" id="authPw2Wrap" hidden>
+            <span class="auth-label">确认密码</span>
+            <input id="authPw2" type="password" autocomplete="new-password" placeholder="再输入一次" />
+          </label>
+          <p class="auth-err" id="authErr" role="alert"></p>
+          <button class="btn btn-primary auth-submit" id="authSubmit" type="submit"><span>登 录</span></button>
+          <p class="auth-hint">邮箱仅用于本站登录，不发送验证邮件，也不对外公开。</p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 百宝箱（登录用户专属） -->
+  <div class="overlay" id="tbOverlay" hidden>
+    <div class="panel tb-panel" role="dialog" aria-modal="true" aria-label="百宝箱">
+      <div class="panel-head">
+        <h3>百宝箱</h3>
+        <span class="tb-user" id="tbUser"></span>
+        <button class="icon-btn tb-close" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="tb-body">
+        <div class="tb-nav" id="tbNav">
+          <button class="tb-chip is-on" data-tb="qr" type="button">二维码</button>
+          <button class="tb-chip" data-tb="draw" type="button">涂鸦板</button>
+          <button class="tb-chip" data-tb="wheel" type="button">转盘</button>
+          <button class="tb-chip" data-tb="pass" type="button">密码</button>
+          <button class="tb-chip" data-tb="txt" type="button">文本工具</button>
+          <button class="tb-chip" data-tb="color" type="button">配色板</button>
+        </div>
+        <div class="tb-stage" id="tbBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 全局吐司 -->
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
   <script src="assets/js/fx.js"></script>
   <script src="assets/js/fun.js"></script>
+  <script src="assets/js/vendor-qrcode.js"></script>
+  <script src="assets/js/toolbox.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>
