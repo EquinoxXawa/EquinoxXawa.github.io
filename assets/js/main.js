@@ -206,13 +206,17 @@
         '<button type="button" class="auth-tab' + (isReg ? " is-on" : "") + '" data-v="register">注册</button>' +
       "</div>" +
       '<form id="authForm" novalidate>' +
-        '<label class="auth-field"><span class="auth-label">邮箱</span><input id="aEmail" type="email" autocomplete="email" placeholder="you@example.com" /></label>' +
+        '<label class="auth-field"><span class="auth-label">邮箱</span><span class="auth-code-row">' +
+          '<input id="aEmail" type="email" autocomplete="email" placeholder="you@example.com" />' +
+          (isReg ? '<button type="button" class="btn ghost" id="aSendCode">发送验证码</button>' : "") +
+        "</span></label>" +
+        (isReg ? '<label class="auth-field"><span class="auth-label">邮箱验证码（已发到你邮箱）</span><input id="aCode" type="text" maxlength="6" inputmode="numeric" placeholder="6 位数字" /></label>' : "") +
         '<label class="auth-field"><span class="auth-label">密码</span><span class="auth-pw-wrap"><input id="aPass" type="password" autocomplete="' + (isReg ? "new-password" : "current-password") + '" placeholder="至少 6 位" />' +
         '<button type="button" class="auth-eye" id="aEye"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></svg></button></span></label>' +
         (isReg ? '<label class="auth-field"><span class="auth-label">确认密码</span><input id="aPass2" type="password" autocomplete="new-password" placeholder="再输入一次" /></label>' : "") +
         '<p class="auth-err" id="aErr"></p>' +
         '<button class="btn primary auth-submit" type="submit"><span>' + (isReg ? "注 册" : "登 录") + "</span></button>" +
-        '<p class="auth-hint">邮箱仅用于登录本站，不对外公开。</p>' +
+        '<p class="auth-hint">' + (isReg ? "注册需邮箱验证码（防止机器人）" : "邮箱仅用于登录本站，不对外公开") + "。</p>" +
       "</form>";
   }
   function profileHTML() {
@@ -273,23 +277,75 @@
       var p = document.getElementById("aPass");
       p.type = p.type === "password" ? "text" : "password";
     });
+    // 注册：发送邮箱验证码（60 秒冷却）
+    if (currentView === "register") {
+      var sendBtn = document.getElementById("aSendCode");
+      var codeIn = document.getElementById("aCode");
+      sendBtn.addEventListener("click", function () {
+        var err = document.getElementById("aErr");
+        var em = (document.getElementById("aEmail").value || "").trim().toLowerCase();
+        err.textContent = "";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) { err.textContent = "先填对邮箱"; shake(); return; }
+        sendBtn.disabled = true;
+        var left = 60;
+        sendBtn.textContent = "发送中…";
+        fetch(API + "/auth/code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: em }),
+        }).then(function (r) { return r.json(); }).then(function (j) {
+          if (j.ok) {
+            err.style.color = "var(--a2)";
+            err.textContent = "验证码已发送到 " + em;
+            codeIn.focus();
+          } else {
+            err.style.color = "";
+            err.textContent = j.error || "发送失败";
+            sendBtn.disabled = false;
+            sendBtn.textContent = "发送验证码";
+            shake();
+            return;
+          }
+        }).catch(function () {
+          err.style.color = "";
+          err.textContent = "发送失败，稍后再试";
+          sendBtn.disabled = false;
+          sendBtn.textContent = "发送验证码";
+          return;
+        });
+        var timer = setInterval(function () {
+          left--;
+          if (left <= 0) {
+            clearInterval(timer);
+            sendBtn.disabled = false;
+            sendBtn.textContent = "重新发送";
+          } else {
+            sendBtn.textContent = left + "s";
+          }
+        }, 1000);
+      });
+    }
     document.getElementById("authForm").addEventListener("submit", function (ev) {
       ev.preventDefault();
       var err = document.getElementById("aErr");
+      err.style.color = "";
       var em = (document.getElementById("aEmail").value || "").trim().toLowerCase();
       var pw = document.getElementById("aPass").value || "";
       err.textContent = "";
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) { err.textContent = "邮箱格式不对"; shake(); return; }
       if (pw.length < 6) { err.textContent = "密码至少 6 位"; shake(); return; }
-      if (currentView === "register" && pw !== (document.getElementById("aPass2").value || "")) {
-        err.textContent = "两次密码不一致"; shake(); return;
+      var body = { email: em, password: pw };
+      if (currentView === "register") {
+        if (pw !== (document.getElementById("aPass2").value || "")) { err.textContent = "两次密码不一致"; shake(); return; }
+        body.code = (document.getElementById("aCode").value || "").trim();
+        if (!body.code) { err.textContent = "请输入邮箱验证码"; shake(); return; }
       }
       var btn = document.querySelector("#authForm .auth-submit");
       btn.innerHTML = '<span class="spinner"></span>';
       fetch(API + "/auth/" + currentView, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: em, password: pw }),
+        body: JSON.stringify(body),
       }).then(function (r) { return r.json(); }).then(function (j) {
         if (j.ok && j.token) {
           storeSession(j.token, j.email, { nick: j.email.split("@")[0].slice(0, 16), accent: "violet" });

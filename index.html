@@ -34,6 +34,7 @@
       <div class="nav-actions">
         <button class="btn ghost btn-acct" id="acctBtn" type="button">登录</button>
         <button class="btn ghost nav-net" id="netBtn" type="button" title="站长网盘">网盘</button>
+        <button class="btn ghost nav-adm" id="admBtn" type="button" title="站长后台">后台</button>
         <button class="icon-btn hamburger" id="menuBtn" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="mobileNav">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
@@ -47,6 +48,7 @@
         <li><button class="nav-link" id="mobileAcct" type="button">登录</button></li>
         <li><button class="nav-link" id="mobileTool" type="button" hidden>百宝箱</button></li>
         <li><button class="nav-link" id="mobileNet" type="button">站长网盘</button></li>
+        <li><button class="nav-link" id="mobileAdm" type="button">站长后台</button></li>
       </ul>
     </div>
   </header>
@@ -174,12 +176,25 @@
     </div>
   </div>
 
+  <!-- 站长后台 -->
+  <div class="overlay" id="admOverlay" hidden>
+    <div class="panel adm-panel" role="dialog" aria-modal="true" aria-label="站长后台">
+      <div class="panel-head">
+        <h3>站长后台</h3>
+        <span class="net-state" id="admState"></span>
+        <button class="icon-btn adm-close" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="net-body" id="admBody"></div>
+    </div>
+  </div>
+
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
   <script src="assets/js/fx.js"></script>
   <script src="assets/js/vendor-qrcode.js"></script>
   <script src="assets/js/toolbox.js"></script>
   <script src="assets/js/netdisk.js"></script>
+  <script src="assets/js/admin.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>
