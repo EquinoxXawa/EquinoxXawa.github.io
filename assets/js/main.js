@@ -370,8 +370,8 @@
     var p = authOverlay.querySelector(".auth-panel");
     p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake");
   }
-  function openAuth() {
-    currentView = "login";
+  function openAuth(mode) {
+    currentView = mode === "register" ? "register" : "login";
     authOverlay.hidden = false;
     document.body.style.overflow = "hidden";
     renderView();
@@ -414,9 +414,20 @@
   var postCount = document.getElementById("postCount");
   var postSend = document.getElementById("postSend");
   var feedEl = document.getElementById("feed");
+  var feedEmpty = document.getElementById("feedEmpty");
+  var feedEmptyBtn = document.getElementById("feedEmptyBtn");
   var compDot = document.getElementById("compDot");
   var compWho = document.getElementById("compWho");
   var feedCache = [];
+
+  function refreshEmpty() {
+    if (!feedEmpty) return;
+    var show = !feedCache.length;
+    feedEmpty.hidden = !show;
+    if (show && feedEmptyBtn) {
+      feedEmptyBtn.textContent = email ? "发布第一条动态" : "登录写动态";
+    }
+  }
 
   function renderComposer() {
     if (!composer) return;
@@ -429,32 +440,34 @@
       composer.hidden = true;
       guestHint.hidden = false;
     }
+    refreshEmpty();
   }
   function renderFeed() {
     if (!feedEl) return;
     if (!feedCache.length) {
-      feedEl.innerHTML = '<p class="feed-empty">暂无动态</p>';
-      return;
-    }
-    feedEl.innerHTML = feedCache.map(function (p) {
-      var own = !!p.owner;
-      return "" +
-        '<div class="feed-item">' +
-          '<div class="fi-head"><span class="fi-ava">' + esc((p.nick || "?").slice(0, 1).toUpperCase()) + "</span>" +
-          '<span class="fi-name">' + esc(p.nick || "用户") + "</span>" +
-          '<span class="fi-time">' + esc(p.date || "") + "</span></div>" +
-          '<p class="fi-text">' + esc(p.content) + "</p>" +
-          (own ? '<button class="fi-del" data-id="' + p.id + '" type="button">删除</button>' : "") +
-        "</div>";
-    }).join("");
-    feedEl.querySelectorAll(".fi-del").forEach(function (b) {
-      b.addEventListener("click", function () {
-        apiCall("DELETE", "/api/posts", { id: parseInt(b.getAttribute("data-id"), 10) }).then(function (j) {
-          if (j.list) { feedCache = j.list; renderFeed(); renderComposer(); toast("已删除", "ok"); }
-          else toast("删除失败", "err");
+      feedEl.innerHTML = "";
+    } else {
+      feedEl.innerHTML = feedCache.map(function (p) {
+        var own = !!p.owner;
+        return "" +
+          '<div class="feed-item">' +
+            '<div class="fi-head"><span class="fi-ava">' + esc((p.nick || "?").slice(0, 1).toUpperCase()) + "</span>" +
+            '<span class="fi-name">' + esc(p.nick || "用户") + "</span>" +
+            '<span class="fi-time">' + esc(p.date || "") + "</span></div>" +
+            '<p class="fi-text">' + esc(p.content) + "</p>" +
+            (own ? '<button class="fi-del" data-id="' + p.id + '" type="button">删除</button>' : "") +
+          "</div>";
+      }).join("");
+      feedEl.querySelectorAll(".fi-del").forEach(function (b) {
+        b.addEventListener("click", function () {
+          apiCall("DELETE", "/api/posts", { id: parseInt(b.getAttribute("data-id"), 10) }).then(function (j) {
+            if (j.list) { feedCache = j.list; renderFeed(); renderComposer(); toast("已删除", "ok"); }
+            else toast("删除失败", "err");
+          });
         });
       });
-    });
+    }
+    refreshEmpty();
   }
   function loadFeed() {
     fetch(API + "/posts", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (j) {
@@ -479,6 +492,18 @@
   }
 
   /* ---------- 启动 ---------- */
+  if (feedEmptyBtn) {
+    feedEmptyBtn.addEventListener("click", function () {
+      if (email) {
+        composer.hidden = false;
+        composer.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (postText) postText.focus();
+      } else {
+        openAuth("register");
+        toast("注册登录后即可发动态", "info");
+      }
+    });
+  }
   initSession();
   loadFeed();
   renderComposer();

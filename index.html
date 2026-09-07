@@ -116,6 +116,11 @@
 
         <p class="guest-hint" id="guestHint" hidden>登录后可以发动态</p>
         <div class="feed" id="feed"></div>
+        <div class="feed-empty-box" id="feedEmpty" hidden>
+          <p class="fe-title">还没有动态</p>
+          <p class="fe-sub">登录后写下第一条：此刻的想法、战绩、术力口推荐……</p>
+          <button class="btn primary" id="feedEmptyBtn" type="button">登录写动态</button>
+        </div>
       </div>
     </section>
   </main>
@@ -124,10 +129,14 @@
   <footer class="site-footer" id="contact">
     <div class="wrap">
       <h2 class="sweep">联系</h2>
-      <a class="mail-line" href="mailto:EquinoxX1337@163.com">EquinoxX1337@163.com</a>
-      <button class="btn ghost" id="copyBtn" type="button">复制邮箱</button>
-      <p class="visit-line" id="visitLine" hidden></p>
-      <p class="copyright">© <span id="year">2026</span> EquinoxX · EquinoxX 的小窝</p>
+      <div class="contact-card">
+        <a class="mail-line" href="mailto:EquinoxX1337@163.com">EquinoxX1337@163.com</a>
+        <button class="btn ghost" id="copyBtn" type="button">复制邮箱</button>
+      </div>
+      <div class="footer-meta">
+        <p class="visit-line" id="visitLine" hidden></p>
+        <p class="copyright">© <span id="year">2026</span> EquinoxX · EquinoxX 的小窝</p>
+      </div>
     </div>
   </footer>
 
