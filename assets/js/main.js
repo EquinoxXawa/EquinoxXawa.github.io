@@ -1,892 +1,429 @@
 /* =========================================================
-   main.js — 页面逻辑：主题 / 导航 / 打字机 / 匿名问答（含站长管理）/ 访客计数
-   问答走同源 /api（服务器版）；GitHub Pages 备份自动降级为只读
+   EquinoxX 的小窝 — 页面逻辑
+   霓虹动效 / 登录注册 / 动态圈 / 个人资料 / 百宝箱门控
    ========================================================= */
 (function () {
   "use strict";
-
   var doc = document.documentElement;
+  var API = "./api";
+  var esc = function (s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  };
 
-  /* ---------- 主题 ---------- */
-  var themeBtn = document.getElementById("themeBtn");
-  function applyTheme(next) {
-    doc.setAttribute("data-theme", next);
-    try { localStorage.setItem("eqx-theme", next); } catch (e) {}
-    window.dispatchEvent(new Event("eqxtheme"));
+  /* ---------- 吐司 ---------- */
+  var toastWrap = document.getElementById("toasts");
+  function toast(msg, type) {
+    if (!toastWrap) return;
+    var el = document.createElement("div");
+    el.className = "toast";
+    el.innerHTML = "<b>" + (type === "err" ? "!" : "✓") + "</b><span>" + esc(msg) + "</span>";
+    toastWrap.appendChild(el);
+    setTimeout(function () { el.classList.add("out"); setTimeout(function () { el.remove(); }, 300); }, 2400);
   }
-  if (themeBtn) {
-    themeBtn.addEventListener("click", function () {
-      applyTheme(doc.getAttribute("data-theme") === "light" ? "dark" : "light");
-      if (window.FX) window.FX.rain(1.1); // 换肤小彩带
-    });
-  }
+  window.__toast = toast;
 
-  /* ---------- 移动端导航 ---------- */
+  /* ---------- 波纹（全局 .btn / 圆钮） ---------- */
+  document.addEventListener("pointerdown", function (e) {
+    var b = e.target.closest(".btn");
+    if (!b) return;
+    var r = b.getBoundingClientRect();
+    var d = Math.max(r.width, r.height);
+    var s = document.createElement("span");
+    s.className = "ripple";
+    s.style.width = s.style.height = d + "px";
+    s.style.left = e.clientX - r.left - d / 2 + "px";
+    s.style.top = e.clientY - r.top - d / 2 + "px";
+    b.appendChild(s);
+    setTimeout(function () { s.remove(); }, 640);
+  }, { passive: true });
+
+  /* ---------- 导航 / 滚动 ---------- */
+  var header = document.getElementById("siteHeader");
   var menuBtn = document.getElementById("menuBtn");
   var mobileNav = document.getElementById("mobileNav");
+  window.addEventListener("scroll", function () {
+    header.classList.toggle("scrolled", window.scrollY > 10);
+  }, { passive: true });
   if (menuBtn && mobileNav) {
     menuBtn.addEventListener("click", function () {
       var open = menuBtn.getAttribute("aria-expanded") === "true";
       menuBtn.setAttribute("aria-expanded", String(!open));
-      menuBtn.setAttribute("aria-label", open ? "打开菜单" : "关闭菜单");
       mobileNav.hidden = open;
     });
-    mobileNav.querySelectorAll("a").forEach(function (a) {
-      a.addEventListener("click", function () {
+    mobileNav.querySelectorAll("a, button").forEach(function (el) {
+      el.addEventListener("click", function () {
         menuBtn.setAttribute("aria-expanded", "false");
         mobileNav.hidden = true;
       });
     });
   }
 
-  /* ---------- 滚动 ---------- */
-  var header = document.getElementById("siteHeader");
-  var toTop = document.getElementById("toTop");
-  function onScroll() {
-    var y = window.scrollY || 0;
-    if (header) header.classList.toggle("scrolled", y > 8);
-    if (toTop) toTop.hidden = y < 560;
-  }
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-  if (toTop) {
-    toTop.addEventListener("click", function () {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
+  /* ---------- Hero：名字逐字登场 ---------- */
+  var nameEl = document.getElementById("heroName");
+  if (nameEl) {
+    var txt = nameEl.textContent;
+    nameEl.textContent = "";
+    var html = "";
+    for (var i = 0; i < txt.length; i++) {
+      html += '<span class="ch glitch" style="animation-delay:' + (0.08 * i) + 's">' + esc(txt[i]) + "</span>";
+    }
+    nameEl.innerHTML = html;
   }
 
-  /* ---------- 彩带 ---------- */
-  function rain() { if (window.FX) window.FX.rain(2.8); }
-  function burstCenter() { if (window.FX) window.FX.burst(window.innerWidth / 2, window.innerHeight * 0.5, 70); }
-  var confettiBtn = document.getElementById("confettiBtn");
-  var confettiCta = document.getElementById("confettiCta");
-  if (confettiBtn) confettiBtn.addEventListener("click", rain);
-  if (confettiCta) confettiCta.addEventListener("click", rain);
-
-  /* ---------- 滚动显现 ---------- */
-  var revealObserver = null;
-  if ("IntersectionObserver" in window) {
-    revealObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          en.target.classList.add("in");
-          revealObserver.unobserve(en.target);
-          // 自动特效：带 data-sprinkle 的区块首次进入视野时放一小簇彩花
-          if (en.target.dataset && en.target.dataset.sprinkle && window.FX) {
-            var r = en.boundingClientRect;
-            window.FX.burst(r.left + r.width / 2, Math.min(r.top + 26, window.innerHeight * 0.82), 24);
-          }
-        }
-      });
-    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
-    document.querySelectorAll(".reveal").forEach(function (el) { revealObserver.observe(el); });
-  } else {
-    document.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("in"); });
-  }
-  function observeReveals(scope) {
-    if (!revealObserver) return;
-    scope.querySelectorAll(".reveal:not(.in)").forEach(function (el) { revealObserver.observe(el); });
-  }
-
-  /* ---------- 工具 ---------- */
-  function esc(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  }
-  var PALETTE = [
-    ["#6366f1", "#8b5cf6"], ["#0ea5e9", "#22d3ee"], ["#f59e0b", "#f97316"],
-    ["#ec4899", "#f43f5e"], ["#10b981", "#34d399"], ["#8b5cf6", "#d946ef"],
-  ];
-  function hashStr(s) {
-    var h = 0; s = String(s || "");
-    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-    return h;
-  }
-  function gradFor(key) {
-    var c = PALETTE[hashStr(key) % PALETTE.length];
-    return "linear-gradient(135deg," + c[0] + "," + c[1] + ")";
-  }
-
-  /* ---------- 打字机 ---------- */
+  /* ---------- 打字机（标签短词轮换） ---------- */
   var typeEl = document.getElementById("typeText");
-  var LINES = [
-    "白天写代码，晚上开镜",
-    "Apex / COD / CS2 / Deadlock 常驻",
-    "写点代码笔记、游戏心得和碎碎念",
-    "欢迎光临我的 PhantomBlog",
-  ];
+  var WORDS = ["辽宁 · 本溪", "高中生", "Apex", "术力口", "double pleasure"]; // 极简短词
   if (typeEl) {
-    var li = 0, ci = 0, deleting = false;
+    var wi = 0, ci = 0, del = false;
     (function tick() {
-      var line = LINES[li];
-      if (!deleting) {
+      var w = WORDS[wi];
+      if (!del) {
         ci++;
-        if (ci >= line.length) { deleting = true; setTimeout(tick, 2000); return; }
+        if (ci > w.length) { del = true; setTimeout(tick, 1700); return; }
       } else {
         ci--;
-        if (ci <= 0) { deleting = false; li = (li + 1) % LINES.length; setTimeout(tick, 260); return; }
+        if (ci < 0) { del = false; wi = (wi + 1) % WORDS.length; setTimeout(tick, 300); return; }
       }
-      typeEl.textContent = line.slice(0, ci);
-      setTimeout(tick, deleting ? 32 : 58);
+      typeEl.textContent = w.slice(0, ci);
+      setTimeout(tick, del ? 36 : 72);
     })();
   }
 
-  /* =========================================================
-     匿名问答 + 站长管理
-     ========================================================= */
-  var API = "./api";
-  var MAIN_URL = "http://103.236.97.213:38090";
-  var ADMIN_KEY = "pb-admin-token";
+  /* ---------- 扫光入场 + 3D 悬浮 ---------- */
+  var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (en) {
+      if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+    });
+  }, { threshold: 0.15 }) : null;
+  document.querySelectorAll(".sweep").forEach(function (el) { if (io) io.observe(el); else el.classList.add("in"); });
 
-  var qaList = document.getElementById("qaList");
-  var qaForm = document.getElementById("qaForm");
-  var qaName = document.getElementById("qaName");
-  var qaContent = document.getElementById("qaContent");
-  var qaSend = document.getElementById("qaSend");
-  var qaStatus = document.getElementById("qaStatus");
-
-  var adminToggle = document.getElementById("adminToggle");
-  var adminPanel = document.getElementById("adminPanel");
-  var adminPass = document.getElementById("adminPass");
-  var adminUnlock = document.getElementById("adminUnlock");
-  var adminLock = document.getElementById("adminLock");
-  var adminStatus = document.getElementById("adminStatus");
-
-  /* 人机验证滑块 */
-  var verifyBox = document.getElementById("verify");
-  var verifyTrack = document.getElementById("verifyTrack");
-  var verifyFill = document.getElementById("verifyFill");
-  var verifyMsg = document.getElementById("verifyMsg");
-  var verifyThumb = document.getElementById("verifyThumb");
-  var challenge = null;
-  var verifyOk = false;
-
-  var liveMode = false;
-  var adminToken = null;
-
-  function getStoredToken() {
-    try { return localStorage.getItem(ADMIN_KEY); } catch (e) { return null; }
-  }
-  function storeToken(t) {
-    adminToken = t || null;
-    try {
-      if (t) localStorage.setItem(ADMIN_KEY, t);
-      else localStorage.removeItem(ADMIN_KEY);
-    } catch (e) {}
-  }
-
-  function setStatus(el, msg, type) {
-    if (!el) return;
-    el.textContent = msg || "";
-    el.className = "qa-status" + (type ? " " + type : "");
-  }
-  function setReadOnly(reason) {
-    liveMode = false;
-    adminToken = null;
-    if (qaForm) {
-      [].forEach.call(qaForm.querySelectorAll("input, textarea, button"), function (el) { el.disabled = true; });
-    }
-    if (adminToggle) adminToggle.hidden = true;
-    if (adminPanel) adminPanel.hidden = true;
-    if (verifyBox) verifyBox.hidden = true;
-    setStatus(qaStatus, reason || "只读预览：这是 GitHub Pages 备份，互动请访问主站", "err");
-  }
-
-  function qaItemHTML(e) {
-    var name = e.name || "匿名用户";
-    var anon = !!e.anon || !e.name;
-    var letter = anon ? "?" : esc(String(name).slice(0, 1));
-    var key = (e.id != null ? e.id : Math.random()) + ":" + name;
-    var replyBlock = "";
-    if (e.reply && e.reply.text) {
-      replyBlock =
-        '<div class="qa-reply">' +
-          '<div class="qa-reply-head">站长回复<span class="qa-reply-date">' + esc(e.reply.date || "") + "</span></div>" +
-          '<p class="qa-reply-text">' + esc(e.reply.text) + "</p>" +
-        "</div>";
-    }
-    var adminOps = "";
-    if (adminToken) {
-      adminOps =
-        '<div class="qa-admin-ops">' +
-          '<button type="button" class="qa-mini-btn" data-act="reply" data-id="' + e.id + '">回复</button>' +
-          (e.reply && e.reply.text
-            ? '<button type="button" class="qa-mini-btn" data-act="delreply" data-id="' + e.id + '">删除回复</button>' : "") +
-          '<button type="button" class="qa-mini-btn danger" data-act="del" data-id="' + e.id + '">删除此条</button>' +
-        "</div>";
-    }
-    return (
-      '<div class="qa-item reveal" data-id="' + e.id + '">' +
-        '<div class="qa-head">' +
-          '<span class="qa-ava" style="background:' + gradFor(key) + '">' + letter + "</span>" +
-          '<span class="qa-name">' + esc(name) + "</span>" +
-          (anon ? '<span class="qa-pill">匿名</span>' : "") +
-          '<span class="qa-date">' + esc(e.date || "") + "</span>" +
-        "</div>" +
-        '<p class="qa-text">' + esc(e.content || "") + "</p>" +
-        replyBlock +
-        adminOps +
-        '<div class="qa-reply-editor" hidden>' +
-          '<div class="qa-replybox">' +
-            '<textarea rows="2" maxlength="400" placeholder="以站长身份回复（最多 400 字）"></textarea>' +
-            '<button type="button" class="btn btn-primary btn-sm" data-act="sendreply" data-id="' + e.id + '">发出回复</button>' +
-            '<button type="button" class="btn btn-ghost btn-sm" data-act="cancelreply" data-id="' + e.id + '">取消</button>' +
-          "</div>" +
-        "</div>" +
-      "</div>"
-    );
-  }
-
-  function renderQA(list) {
-    if (!qaList) return;
-    if (!Array.isArray(list) || list.length === 0) {
-      qaList.innerHTML = '<p class="state-note">还没有留言，来问第一个问题吧。</p>';
-      return;
-    }
-    qaList.innerHTML = list.map(qaItemHTML).join("");
-    observeReveals(qaList);
-  }
-
-  /* ---------- API ---------- */
-  function api(method, path, bodyObj) {
-    var opts = {
-      method: method,
-      headers: { "Content-Type": "application/json" },
-      cache: "no-store",
-    };
-    if (adminToken) opts.headers.Authorization = "Bearer " + adminToken;
-    if (bodyObj !== undefined) opts.body = JSON.stringify(bodyObj);
-    return fetch(API + path, opts).then(function (r) {
-      return r.json().then(function (j) {
-        if (!r.ok) {
-          var err = new Error(j.error || "HTTP " + r.status);
-          err.status = r.status;
-          err.json = j;
-          throw err;
-        }
-        return j;
+  var fine = window.matchMedia("(pointer:fine)").matches;
+  if (fine && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll(".tilt").forEach(function (card) {
+      card.addEventListener("pointermove", function (e) {
+        var r = card.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width - 0.5;
+        var y = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = "perspective(600px) rotateY(" + (x * 10) + "deg) rotateX(" + (-y * 8) + "deg) translateY(-3px)";
       });
+      card.addEventListener("pointerleave", function () { card.style.transform = ""; });
     });
   }
 
-  function reloadQA() {
-    return api("GET", "/qa").then(function (j) {
-      liveMode = true;
-      renderQA(j.list || []);
-    });
-  }
-
-  /* ---------- 初始化 ---------- */
-  function initQA() {
-    if (!qaList) return;
-    // 先试着带已有 token 验证管理员身份
-    var stored = getStoredToken();
-    if (stored) adminToken = stored;
-    reloadQA()
-      .then(function () {
-        // live；若带 token，校验是否仍有效
-        if (stored) {
-          fetch(API + "/authcheck", { headers: { Authorization: "Bearer " + stored } })
-            .then(function (r) { return r.json(); })
-            .then(function (j) { if (!j.ok) { storeToken(null); adminLockState(); } })
-            .catch(function () { storeToken(null); adminLockState(); });
-        }
-      })
-      .catch(function () {
-        // 无后端：降级只读（读本地 comments.json 旧留言）
-        renderQA([]);
-        fetch("./data/comments.json", { cache: "no-store" })
-          .then(function (r2) { if (!r2.ok) throw 0; return r2.json(); })
-          .then(function (legacy) {
-            var mapped = (Array.isArray(legacy) ? legacy : []).map(function (c) {
-              return { id: "f" + hashStr(c.username + c.date), name: c.username, content: c.content, date: c.date, anon: false };
-            });
-            renderQA(mapped);
-            setReadOnly("这里是 GitHub Pages 备份（只读），到主站 " + MAIN_URL + " 可以匿名提问互动");
-          })
-          .catch(function () { setReadOnly(); });
-      });
-  }
-
-  /* ---------- 提交问答 ---------- */
-  if (qaForm) {
-    qaForm.addEventListener("submit", function (ev) {
-      ev.preventDefault();
-      var content = (qaContent.value || "").trim();
-      if (!content) { setStatus(qaStatus, "写点内容再发送吧", "err"); return; }
-      if (content.length > 500) { setStatus(qaStatus, "最多 500 字哦", "err"); return; }
-      if (!liveMode) { setStatus(qaStatus, "备份版无法保存，去主站提问吧", "err"); return; }
-      if (!verifyOk || !challenge) { setStatus(qaStatus, "请先完成人机验证（滑动右侧箭头）", "err"); return; }
-      qaSend.disabled = true;
-      qaSend.textContent = "发送中…";
-      setStatus(qaStatus, "", "");
-      api("POST", "/qa", {
-        name: (qaName.value || "").trim(),
-        content: content,
-        challenge: challenge,
-      })
-        .then(function (j) {
-          qaContent.value = "";
-          renderQA(j.list || []);
-          setStatus(qaStatus, "已悄悄放上去啦", "ok");
-          burstCenter();
-          resetVerify();      // 发送成功：收回按钮，为下一条重新验证
-          fetchChallenge();   // 预取下一条验证码
-        })
-        .catch(function (err) {
-          if (err.status === 403) {
-            setStatus(qaStatus, "验证已过期，请重新滑动一次", "err");
-            resetVerify();
-            fetchChallenge();
-          } else {
-            setStatus(qaStatus, err.status === 429 ? "发得太快啦，休息几秒再试" : "发送失败，稍后再试试", "err");
-            qaSend.disabled = false; // 网络类错误保留按钮，方便重试
-          }
-        })
-        .finally(function () {
-          qaSend.textContent = "发送";
-        });
-    });
-  }
-
-  /* ---------- 管理：解锁 / 锁定 ---------- */
-  function adminUnlockState() {
-    if (adminToggle) adminToggle.textContent = "锁定";
-    if (adminPanel) adminPanel.hidden = true;
-    if (liveMode) reloadQA();
-  }
-  function adminLockState() {
-    storeToken(null);
-    if (adminToggle) adminToggle.textContent = "管理";
-    if (adminPanel) adminPanel.hidden = true;
-    if (qaList && liveMode) reloadQA();
-    setStatus(adminStatus, "", "");
-  }
-  function unlockTry() {
-    var secret = (adminPass.value || "").trim();
-    if (!secret) { setStatus(adminStatus, "请输入口令", "err"); return; }
-    setStatus(adminStatus, "验证中…", "");
-    fetch(API + "/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ secret: secret }),
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        if (j.ok && j.token) {
-          storeToken(j.token);
-          adminPass.value = "";
-          adminUnlockState();
-          setStatus(adminStatus, "已解锁，可以回复或删除问答", "ok");
-          setStatus(qaStatus, "", "");
-        } else {
-          setStatus(adminStatus, "口令不对哦", "err");
-        }
-      })
-      .catch(function () { setStatus(adminStatus, "后端不可用", "err"); });
-  }
-  if (adminToggle) {
-    adminToggle.addEventListener("click", function () {
-      if (adminToken) { adminLockState(); return; }
-      if (adminPanel) adminPanel.hidden = !adminPanel.hidden;
-      if (!adminPanel.hidden && adminPass) adminPass.focus();
-    });
-  }
-  if (adminUnlock) adminUnlock.addEventListener("click", unlockTry);
-  if (adminPass) {
-    adminPass.addEventListener("keydown", function (e) { if (e.key === "Enter") unlockTry(); });
-  }
-  if (adminLock) adminLock.addEventListener("click", function () { adminLockState(); });
-
-  /* ---------- 管理：回复 / 删除（事件委托） ---------- */
-  function apiReply(id, text) {
-    return api("POST", "/qa/reply", { id: id, text: text });
-  }
-  function apiDel(id) { return api("POST", "/qa/del", { id: id }); }
-  function apiDelReply(id) { return api("POST", "/qa/delreply", { id: id }); }
-
-  if (qaList) {
-    qaList.addEventListener("click", function (ev) {
-      var btn = ev.target.closest("[data-act]");
-      if (!btn) return;
-      var id = btn.getAttribute("data-id");
-      var act = btn.getAttribute("data-act");
-      var item = btn.closest(".qa-item");
-
-      if (act === "reply") {
-        var editor = item && item.querySelector(".qa-reply-editor");
-        if (editor) {
-          editor.hidden = !editor.hidden;
-          var ta = editor.querySelector("textarea");
-          if (!editor.hidden && ta) ta.focus();
-        }
-      } else if (act === "cancelreply") {
-        var ed2 = item && item.querySelector(".qa-reply-editor");
-        if (ed2) ed2.hidden = true;
-      } else if (act === "sendreply") {
-        var ta2 = item && item.querySelector(".qa-reply-editor textarea");
-        var text = (ta2 && ta2.value || "").trim();
-        if (!text) return;
-        btn.disabled = true;
-        apiReply(parseInt(id, 10), text.slice(0, 400))
-          .then(function (j) { renderQA(j.list || []); setStatus(qaStatus, "回复已发出", "ok"); })
-          .catch(function () { setStatus(qaStatus, "回复失败，请重试", "err"); })
-          .finally(function () { btn.disabled = false; });
-      } else if (act === "del") {
-        if (!window.confirm("确定删除这条问答吗？删除后无法恢复。")) return;
-        apiDel(parseInt(id, 10))
-          .then(function (j) { renderQA(j.list || []); setStatus(qaStatus, "已删除", "ok"); })
-          .catch(function () { setStatus(qaStatus, "删除失败，请重试", "err"); });
-      } else if (act === "delreply") {
-        if (!window.confirm("删除这条站长回复？")) return;
-        apiDelReply(parseInt(id, 10))
-          .then(function (j) { renderQA(j.list || []); setStatus(qaStatus, "回复已删除", "ok"); })
-          .catch(function () { setStatus(qaStatus, "操作失败，请重试", "err"); });
-      }
-    });
-  }
-
-  /* ---------- 人机验证滑块控制 ---------- */
-  function setVerifyIdle() {
-    verifyOk = false;
-    if (qaSend) qaSend.disabled = true;
-    if (verifyBox) verifyBox.classList.remove("done", "dragging");
-    if (verifyThumb) verifyThumb.style.left = "";
-    if (verifyFill) verifyFill.style.width = "0px";
-    if (verifyMsg) verifyMsg.textContent = "按住箭头，向右滑动完成验证";
-  }
-  function resetVerify() {
-    challenge = null;
-    setVerifyIdle();
-  }
-  function successVerify() {
-    if (!challenge) return;
-    verifyOk = true;
-    if (verifyThumb) verifyThumb.style.left = "";
-    if (verifyFill) verifyFill.style.width = "0px";
-    if (verifyBox) verifyBox.classList.remove("dragging");
-    if (verifyBox) verifyBox.classList.add("done");
-    if (verifyMsg) verifyMsg.textContent = "验证通过";
-    if (qaSend) qaSend.disabled = false;
-    if (window.FX) window.FX.burst(window.innerWidth / 2, window.innerHeight * 0.5, 22);
-  }
-  function fetchChallenge() {
-    if (!verifyBox) return;
-    fetch(API + "/challenge", { cache: "no-store" })
-      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-      .then(function (j) {
-        challenge = j.c || null;
-        verifyBox.hidden = false;
-        setVerifyIdle();
-      })
-      .catch(function () {
-        challenge = null;
-        verifyBox.hidden = true;
-      });
-  }
-
-  function initVerify() {
-    if (!verifyTrack || !verifyThumb) return;
-    var dragging = false;
-    var startOffset = 0;
-
-    function maxLeft() { return verifyTrack.clientWidth - verifyThumb.clientWidth - 8; }
-    function applyPos(pos) {
-      var p = Math.max(4, Math.min(maxLeft(), pos));
-      verifyThumb.style.left = p + "px";
-      verifyFill.style.width = (p + verifyThumb.clientWidth * 0.6) + "px";
-      return p;
-    }
-    verifyTrack.addEventListener("pointerdown", function (e) {
-      if (verifyOk || !challenge) return;
-      e.preventDefault();
-      dragging = true;
-      verifyBox.classList.add("dragging");
-      verifyThumb.setPointerCapture(e.pointerId);
-      var r = verifyThumb.getBoundingClientRect();
-      startOffset = e.clientX - r.left;
-      applyPos(e.clientX - verifyTrack.getBoundingClientRect().left - startOffset);
-    });
-    verifyTrack.addEventListener("pointermove", function (e) {
-      if (!dragging) return;
-      var p = applyPos(e.clientX - verifyTrack.getBoundingClientRect().left - startOffset);
-      var fin = maxLeft();
-      if (p >= fin - 6) { finishDrag(true); }
-    });
-    function finishDrag(win) {
-      if (!dragging) return;
-      dragging = false;
-      verifyBox.classList.remove("dragging");
-      if (win && challenge) {
-        successVerify();
-      } else {
-        setVerifyIdle();
-        if (!verifyOk && qaStatus) setStatus(qaStatus, "", "");
-      }
-    }
-    verifyTrack.addEventListener("pointerup", function () { finishDrag(false); });
-    verifyTrack.addEventListener("pointercancel", function () { finishDrag(false); });
-    verifyThumb.addEventListener("keydown", function (e) {
-      if ((e.key === "Enter" || e.key === " ") && challenge && !verifyOk) {
-        e.preventDefault();
-        successVerify();
-      }
-    });
-    fetchChallenge();
-  }
-
-  initQA();
-  initVerify();
-
-  /* =========================================================
-     访客计数
-     ========================================================= */
-  var badge = document.getElementById("visitBadge");
-  function renderVisits(v) {
-    if (!badge || !v) return;
-    badge.innerHTML = "";
-    [["今日访问 ", v.today || 0], ["累计访问 ", v.total || 0]].forEach(function (pair) {
-      var span = document.createElement("span");
-      span.innerHTML = pair[0] + "<b>" + pair[1] + "</b>";
-      badge.appendChild(span);
-    });
-    badge.hidden = false;
-  }
-  function initVisits() {
-    if (!badge) return;
-    var bumped = false;
-    try { bumped = !!sessionStorage.getItem("eqx-v"); } catch (e) {}
-    // 新会话先 +1 再展示（数字即时正确）；老会话直接读取
-    var req = bumped
-      ? fetch(API + "/visits", { cache: "no-store" })
-      : fetch(API + "/visits", { method: "POST", cache: "no-store" });
-    req
-      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-      .then(function (v) {
-        renderVisits(v);
-        if (!bumped) {
-          try { sessionStorage.setItem("eqx-v", "1"); } catch (e) {}
-        }
-      })
-      .catch(function () { /* 非服务器环境，保持隐藏 */ });
-  }
-  initVisits();
-
-  /* ---------- 复制邮箱 ---------- */
+  /* ---------- 复制邮箱 / 年份 ---------- */
   var copyBtn = document.getElementById("copyBtn");
-  var copyLabel = document.getElementById("copyLabel");
-  var EMAIL = "EquinoxX1337@163.com";
   if (copyBtn) {
     copyBtn.addEventListener("click", function () {
-      function done(ok) {
-        if (copyLabel) copyLabel.textContent = ok ? "已复制" : "复制失败，请手动复制";
-        setTimeout(function () { if (copyLabel) copyLabel.textContent = "复制邮箱"; }, 1800);
-      }
+      var done = function (ok) { toast(ok ? "邮箱已复制" : "复制失败", ok ? "ok" : "err"); };
+      var txt = "EquinoxX1337@163.com";
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(EMAIL).then(function () { done(true); }, function () { done(false); });
+        navigator.clipboard.writeText(txt).then(function () { done(true); }, function () { done(false); });
       } else {
         try {
           var ta = document.createElement("textarea");
-          ta.value = EMAIL;
-          ta.style.position = "fixed";
-          ta.style.opacity = "0";
-          document.body.appendChild(ta);
-          ta.select();
-          var ok = document.execCommand("copy");
+          ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+          document.body.appendChild(ta); ta.select();
+          done(document.execCommand("copy"));
           document.body.removeChild(ta);
-          done(ok);
         } catch (e) { done(false); }
       }
     });
   }
-
-  /* ---------- 年份 ---------- */
   var yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-  /* ---------- 跑马灯 ---------- */
-  var tickerTrack = document.getElementById("tickerTrack");
-  var TICKER = [
-    "欢迎光临 PhantomBlog",
-    "匿名问答在线，站长会挑着回复",
-    "右下角有玩具：手速测试、今日运势、一言",
-    "到处点点有惊喜，彩花流星自动冒",
-    "右上角可以切换深色 / 浅色主题",
-    "看完不留言的，晚上排位连跪（不是）",
-  ];
-  if (tickerTrack) {
-    var halfHtml = TICKER.map(function (t) {
-      return "<span>" + esc(t) + '</span><span class="ticker-sep">·</span>';
-    }).join("");
-    tickerTrack.innerHTML = halfHtml + halfHtml;
-  }
-
-  /* ---------- 进站自动小彩带（一次性） ---------- */
-  setTimeout(function () {
-    if (window.FX) window.FX.rain(1.7);
-  }, 2000);
-
-  /* =========================================================
-     全局吐司 + 按钮涟漪
-     ========================================================= */
-  var toastWrap = document.getElementById("toasts");
-  function toast(msg, type) {
-    if (!toastWrap) return;
-    var el = document.createElement("div");
-    el.className = "toast " + (type || "info");
-    el.innerHTML = "<b>" + (type === "ok" ? "✓" : type === "err" ? "!" : "i") + "</b><span>" + esc(msg) + "</span>";
-    toastWrap.appendChild(el);
-    setTimeout(function () {
-      el.classList.add("out");
-      setTimeout(function () { el.remove(); }, 360);
-    }, 2600);
-  }
-  window.__toast = toast;
-
-  document.addEventListener("pointerdown", function (e) {
-    var b = e.target.closest(".btn");
-    if (!b) return;
-    var r = b.getBoundingClientRect();
-    var d = Math.max(r.width, r.height);
-    var span = document.createElement("span");
-    span.className = "ripple";
-    span.style.width = span.style.height = d + "px";
-    span.style.left = (e.clientX - r.left - d / 2) + "px";
-    span.style.top = (e.clientY - r.top - d / 2) + "px";
-    b.appendChild(span);
-    setTimeout(function () { span.remove(); }, 640);
-  }, { passive: true });
-
-  /* =========================================================
-     邮箱注册登录（百宝箱门控）
-     ========================================================= */
-  var AUTH_KEY = "pb-token";
-  var AEMAIL_KEY = "pb-email";
-  var authOverlay = document.getElementById("authOverlay");
-  var authPanel = authOverlay ? authOverlay.querySelector(".auth-panel") : null;
-  var authForm = document.getElementById("authForm");
-  var authEmailEl = document.getElementById("authEmail");
-  var authPassEl = document.getElementById("authPass");
-  var authPw2El = document.getElementById("authPw2");
-  var authPw2Wrap = document.getElementById("authPw2Wrap");
-  var authErr = document.getElementById("authErr");
-  var authSubmitBtn = document.getElementById("authSubmit");
-  var authTitle = document.getElementById("authTitle");
-  var dockAccount = document.getElementById("dockAccount");
-  var authTabsBox = document.querySelector("#authOverlay .auth-tabs");
-  var authBodyBox = document.querySelector("#authOverlay .auth-body");
-  var authMode = "login";
-  var userToken = null;
-  var userEmail = null;
-  var toolboxPending = false;
-  var savedFormHTML = authBodyBox ? authBodyBox.innerHTML : "";
-
-  function setAuthUI() {
-    if (!dockAccount) return;
-    if (userEmail) {
-      dockAccount.textContent = userEmail.slice(0, 1).toUpperCase();
-      dockAccount.classList.add("is-in");
-      dockAccount.title = userEmail + "（点击管理账户）";
-    } else {
-      dockAccount.textContent = "登录";
-      dockAccount.classList.remove("is-in");
-      dockAccount.title = "登录 / 注册";
-    }
-  }
-  function clearLocal() {
-    userToken = null;
-    userEmail = null;
-    try { localStorage.removeItem(AUTH_KEY); localStorage.removeItem(AEMAIL_KEY); } catch (e) {}
-    setAuthUI();
-  }
-  function closeAuth() {
-    if (authOverlay) { authOverlay.hidden = true; document.body.style.overflow = ""; }
-  }
-  function restoreAuthFormHTML() {
-    if (!authBodyBox || !savedFormHTML) return;
-    authBodyBox.innerHTML = savedFormHTML;
-    authForm = document.getElementById("authForm");
-    authEmailEl = document.getElementById("authEmail");
-    authPassEl = document.getElementById("authPass");
-    authPw2El = document.getElementById("authPw2");
-    authPw2Wrap = document.getElementById("authPw2Wrap");
-    authErr = document.getElementById("authErr");
-    authSubmitBtn = document.getElementById("authSubmit");
-    authTabsBox = document.querySelector("#authOverlay .auth-tabs");
-  }
-  function switchModeUI() {
-    var isReg = authMode === "register";
-    if (authTitle) authTitle.textContent = isReg ? "创建账号" : "欢迎回来";
-    if (authTabsBox) authTabsBox.style.display = "grid";
-    document.querySelectorAll("#authOverlay .auth-tab").forEach(function (t) {
-      t.classList.toggle("is-on", t.getAttribute("data-mode") === authMode);
-    });
-    if (authPw2Wrap) authPw2Wrap.hidden = !isReg;
-    if (authSubmitBtn) {
-      authSubmitBtn.innerHTML = "<span>" + (isReg ? "注 册" : "登 录") + "</span>";
-      authSubmitBtn.disabled = false;
-    }
-    setErr("");
-  }
-  function setErr(msg) {
-    if (authErr) authErr.textContent = msg || "";
-    if (msg && authPanel) {
-      authPanel.classList.remove("auth-shake");
-      void authPanel.offsetWidth;
-      authPanel.classList.add("auth-shake");
-    }
-  }
-  function openAuth(mode) {
-    if (!authOverlay || !authBodyBox) return;
-    authMode = mode === "register" ? "register" : "login";
-    restoreAuthFormHTML();
-    switchModeUI();
-    bindAuthFormEvents();
-    authOverlay.hidden = false;
-    document.body.style.overflow = "hidden";
-    if (authEmailEl) authEmailEl.focus();
-  }
-  document.querySelectorAll(".auth-close").forEach(function (b) {
-    b.addEventListener("click", closeAuth);
-  });
-  if (authOverlay) {
-    authOverlay.addEventListener("click", function (e) { if (e.target === authOverlay) closeAuth(); });
-  }
-
-  function setLoading(on) {
-    if (!authSubmitBtn) return;
-    if (on) {
-      authSubmitBtn.disabled = true;
-      authSubmitBtn.innerHTML = '<span class="spinner"></span>';
-    } else {
-      authSubmitBtn.disabled = false;
-      authSubmitBtn.innerHTML = "<span>" + (authMode === "register" ? "注 册" : "登 录") + "</span>";
-    }
-  }
-  function submitAuth() {
-    var email = (authEmailEl.value || "").trim().toLowerCase();
-    var pw = authPassEl.value || "";
-    setErr("");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { setErr("邮箱格式不太对"); return; }
-    if (pw.length < 6) { setErr("密码至少 6 位"); return; }
-    if (authMode === "register" && pw !== (authPw2El.value || "")) { setErr("两次密码不一致"); return; }
-    setLoading(true);
-    fetch(API + "/auth/" + (authMode === "register" ? "register" : "login"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email, password: pw }),
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        if (j.ok && j.token) {
-          userToken = j.token;
-          userEmail = j.email;
-          try {
-            localStorage.setItem(AUTH_KEY, j.token);
-            localStorage.setItem(AEMAIL_KEY, j.email);
-          } catch (e) {}
-          setAuthUI();
-          closeAuth();
-          toast(authMode === "register" ? "注册成功，欢迎加入" : "登录成功，欢迎回来", "ok");
-          if (window.FX) window.FX.rain(1.6);
-          if (toolboxPending) { toolboxPending = false; openToolbox(); }
-        } else if (j.error) {
-          setErr(j.error);
-        } else {
-          setErr("邮箱或密码不对，再试试");
-        }
+  /* ---------- 访客计数 ---------- */
+  var visitLine = document.getElementById("visitLine");
+  function initVisits() {
+    if (!visitLine) return;
+    var bumped = false;
+    try { bumped = !!sessionStorage.getItem("eqx-v"); } catch (e) {}
+    (bumped ? fetch(API + "/visits", { cache: "no-store" }) : fetch(API + "/visits", { method: "POST" }))
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (v) {
+        visitLine.innerHTML = "今日访问 <b>" + (v.today || 0) + "</b> · 累计 <b>" + (v.total || 0) + "</b>";
+        visitLine.hidden = false;
+        if (!bumped) { try { sessionStorage.setItem("eqx-v", "1"); } catch (e) {} }
       })
-      .catch(function () { setErr("连不上服务器（登录功能在主站可用）"); })
-      .finally(function () { setLoading(false); });
+      .catch(function () {});
   }
-  function bindAuthFormEvents() {
-    if (authTabsBox) {
-      authTabsBox.addEventListener("click", function (e) {
-        var t = e.target.closest(".auth-tab");
-        if (!t) return;
-        authMode = t.getAttribute("data-mode");
-        switchModeUI();
+  initVisits();
+
+  /* =========================================================
+     账号：登录 / 注册 / 资料 / 主题色
+     ========================================================= */
+  var AUTH_KEY = "pb-token", EMAIL_KEY = "pb-email";
+  var token = null, email = null, profile = { nick: "", accent: "violet" };
+  var authOverlay = document.getElementById("authOverlay");
+  var authBody = document.getElementById("authBody");
+  var acctBtn = document.getElementById("acctBtn");
+  var mobileAcct = document.getElementById("mobileAcct");
+  var mobileTool = document.getElementById("mobileTool");
+  var ACCENTS = { violet: ["#a78bfa", "#22d3ee"], blue: ["#818cf8", "#60a5fa"], pink: ["#f472b6", "#fb7185"], green: ["#34d399", "#22d3ee"], red: ["#f87171", "#fb923c"] };
+  var currentView = "login";
+
+  function apiCall(m, p, body) {
+    var opt = { method: m, headers: { "Content-Type": "application/json" } };
+    if (token) opt.headers.Authorization = "Bearer " + token;
+    if (body !== undefined) opt.body = JSON.stringify(body);
+    return fetch(API + p, opt).then(function (r) { return r.json(); });
+  }
+  function applyAccent(key) {
+    if (ACCENTS[key]) document.body.setAttribute("data-accent", key);
+  }
+  function saveLocal() {
+    try { localStorage.setItem(AUTH_KEY, token); localStorage.setItem(EMAIL_KEY, email); } catch (e) {}
+  }
+  function setAuthUI() {
+    var logged = !!email;
+    acctBtn.textContent = logged ? email.slice(0, 1).toUpperCase() : "登录";
+    acctBtn.classList.toggle("is-in", logged);
+    acctBtn.title = logged ? email + "（我的账户）" : "登录 / 注册";
+    mobileAcct.textContent = logged ? "账户：" + email : "登录";
+    mobileTool.hidden = !logged;
+    applyAccent(profile.accent);
+    renderComposer();
+    renderFeed(); // 刷新以决定是否显示发布框
+  }
+  function storeSession(t, e, p) {
+    token = t; email = e; profile = p || profile;
+    saveLocal(); setAuthUI();
+  }
+  function clearSession() {
+    token = null; email = null; profile = { nick: "", accent: "violet" };
+    try { localStorage.removeItem(AUTH_KEY); localStorage.removeItem(EMAIL_KEY); } catch (e) {}
+    setAuthUI();
+  }
+  function closeAuth() { authOverlay.hidden = true; document.body.style.overflow = ""; }
+
+  function formHTML() {
+    var isReg = currentView === "register";
+    return "" +
+      '<div class="auth-tabs">' +
+        '<button type="button" class="auth-tab' + (!isReg ? " is-on" : "") + '" data-v="login">登录</button>' +
+        '<button type="button" class="auth-tab' + (isReg ? " is-on" : "") + '" data-v="register">注册</button>' +
+      "</div>" +
+      '<form id="authForm" novalidate>' +
+        '<label class="auth-field"><span class="auth-label">邮箱</span><input id="aEmail" type="email" autocomplete="email" placeholder="you@example.com" /></label>' +
+        '<label class="auth-field"><span class="auth-label">密码</span><span class="auth-pw-wrap"><input id="aPass" type="password" autocomplete="' + (isReg ? "new-password" : "current-password") + '" placeholder="至少 6 位" />' +
+        '<button type="button" class="auth-eye" id="aEye"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></svg></button></span></label>' +
+        (isReg ? '<label class="auth-field"><span class="auth-label">确认密码</span><input id="aPass2" type="password" autocomplete="new-password" placeholder="再输入一次" /></label>' : "") +
+        '<p class="auth-err" id="aErr"></p>' +
+        '<button class="btn primary auth-submit" type="submit"><span>' + (isReg ? "注 册" : "登 录") + "</span></button>" +
+        '<p class="auth-hint">邮箱仅用于登录本站，不对外公开。</p>' +
+      "</form>";
+  }
+  function profileHTML() {
+    var dots = Object.keys(ACCENTS).map(function (k) {
+      var c = ACCENTS[k];
+      return '<button type="button" class="accent-dot' + (profile.accent === k ? " on" : "") + '" data-accent="' + k + '" style="background:linear-gradient(135deg,' + c[0] + "," + c[1] + ')" title="' + k + '"></button>';
+    }).join("");
+    return "" +
+      '<p class="acct-mail">' + esc(email || "") + "</p>" +
+      '<label class="auth-field"><span class="auth-label">昵称（动态里显示）</span><input id="pNick" type="text" maxlength="16" value="' + esc(profile.nick || email.split("@")[0]) + '" /></label>' +
+      '<span class="auth-label">主题色</span>' +
+      '<div class="pf-row" id="accentRow">' + dots + "</div>" +
+      '<button class="btn primary auth-submit" id="pSave" type="button"><span>保存设置</span></button>' +
+      '<div class="pf-row">' +
+        '<button class="btn ghost" id="pTool" type="button">打开百宝箱</button>' +
+        '<button class="btn ghost" id="pOut" type="button">退出登录</button>' +
+      "</div>";
+  }
+  function renderView() {
+    var title = document.querySelector("#authOverlay .panel-head h3");
+    if (currentView === "account") {
+      title.textContent = "我的账户";
+      authBody.innerHTML = profileHTML();
+      document.getElementById("pSave").addEventListener("click", function () {
+        var nick = (document.getElementById("pNick").value || "").trim().slice(0, 16);
+        apiCall("PATCH", "/api/profile", { nick: nick, accent: profile.accent }).then(function (j) {
+          if (j.ok && j.profile) {
+            profile = j.profile; applyAccent(profile.accent);
+            toast("已保存", "ok");
+            setAuthUI();
+          } else toast("保存失败", "err");
+        });
       });
-    }
-    var eye = document.querySelector("#authOverlay .auth-eye");
-    if (eye) {
-      eye.addEventListener("click", function () {
-        if (authPassEl) authPassEl.type = authPassEl.type === "password" ? "text" : "password";
+      document.getElementById("accentRow").addEventListener("click", function (e) {
+        var d = e.target.closest("[data-accent]");
+        if (!d) return;
+        profile.accent = d.getAttribute("data-accent");
+        applyAccent(profile.accent);
+        document.querySelectorAll(".accent-dot").forEach(function (x) { x.classList.toggle("on", x === d); });
+        // 即时预览并保存
+        apiCall("PATCH", "/api/profile", { accent: profile.accent }).catch(function () {});
       });
-    }
-    if (authForm) {
-      authForm.addEventListener("submit", function (ev) {
-        ev.preventDefault();
-        submitAuth();
+      document.getElementById("pTool").addEventListener("click", function () { closeAuth(); openTool(); });
+      document.getElementById("pOut").addEventListener("click", function () {
+        if (token) fetch(API + "/auth/logout", { method: "POST", headers: { Authorization: "Bearer " + token } }).catch(function () {});
+        clearSession(); closeAuth(); toast("已退出登录", "ok");
       });
+      return;
     }
+    title.textContent = currentView === "register" ? "创建账号" : "欢迎回来";
+    authBody.innerHTML = formHTML();
+    authBody.querySelector(".auth-tabs").addEventListener("click", function (e) {
+      var t = e.target.closest(".auth-tab");
+      if (t) { currentView = t.getAttribute("data-v"); renderView(); }
+    });
+    var eye = document.getElementById("aEye");
+    if (eye) eye.addEventListener("click", function () {
+      var p = document.getElementById("aPass");
+      p.type = p.type === "password" ? "text" : "password";
+    });
+    document.getElementById("authForm").addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var err = document.getElementById("aErr");
+      var em = (document.getElementById("aEmail").value || "").trim().toLowerCase();
+      var pw = document.getElementById("aPass").value || "";
+      err.textContent = "";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) { err.textContent = "邮箱格式不对"; shake(); return; }
+      if (pw.length < 6) { err.textContent = "密码至少 6 位"; shake(); return; }
+      if (currentView === "register" && pw !== (document.getElementById("aPass2").value || "")) {
+        err.textContent = "两次密码不一致"; shake(); return;
+      }
+      var btn = document.querySelector("#authForm .auth-submit");
+      btn.innerHTML = '<span class="spinner"></span>';
+      fetch(API + "/auth/" + currentView, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: em, password: pw }),
+      }).then(function (r) { return r.json(); }).then(function (j) {
+        if (j.ok && j.token) {
+          storeSession(j.token, j.email, { nick: j.email.split("@")[0].slice(0, 16), accent: "violet" });
+          apiCall("GET", "/api/profile").then(function (p) {
+            if (p.ok) { profile = p.profile; applyAccent(profile.accent); setAuthUI(); }
+          });
+          closeAuth();
+          toast(currentView === "register" ? "注册成功，欢迎" : "登录成功，欢迎回来", "ok");
+          if (window.FX) window.FX.rain(1.4);
+        } else if (j.error) { err.textContent = j.error; shake(); }
+        else { err.textContent = "邮箱或密码不对"; shake(); }
+      }).catch(function () { err.textContent = "连接服务器失败"; shake(); })
+      .finally(restoreAuthBtn);
+    });
   }
-  function openToolbox() {
-    if (window.__toolbox) window.__toolbox.open(userEmail || "");
+  function restoreAuthBtn() {
+    var f = document.getElementById("authForm");
+    var b = f && f.querySelector(".auth-submit");
+    if (b) b.innerHTML = "<span>" + (currentView === "register" ? "注 册" : "登 录") + "</span>";
   }
-  function logout() {
-    if (userToken) {
-      fetch(API + "/auth/logout", { method: "POST", headers: { Authorization: "Bearer " + userToken } }).catch(function () {});
-    }
-    clearLocal();
-    closeAuth();
-    toast("已退出登录", "ok");
+  function shake() {
+    var p = authOverlay.querySelector(".auth-panel");
+    p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake");
   }
-  function initAuth() {
-    bindAuthFormEvents();
+  function openAuth() {
+    currentView = "login";
+    authOverlay.hidden = false;
+    document.body.style.overflow = "hidden";
+    renderView();
+  }
+  function openAccount() {
+    currentView = "account";
+    authOverlay.hidden = false;
+    document.body.style.overflow = "hidden";
+    renderView();
+  }
+  function openTool() {
+    if (window.__toolbox) window.__toolbox.open(email || "");
+  }
+
+  document.querySelectorAll(".auth-close").forEach(function (b) { b.addEventListener("click", closeAuth); });
+  authOverlay.addEventListener("click", function (e) { if (e.target === authOverlay) closeAuth(); });
+  acctBtn.addEventListener("click", function () { email ? openAccount() : openAuth(); });
+  mobileAcct.addEventListener("click", function () { email ? openAccount() : openAuth(); });
+  mobileTool.addEventListener("click", openTool);
+
+  function initSession() {
     var t = null, e = null;
-    try { t = localStorage.getItem(AUTH_KEY); e = localStorage.getItem(AEMAIL_KEY); } catch (err) {}
+    try { t = localStorage.getItem(AUTH_KEY); e = localStorage.getItem(EMAIL_KEY); } catch (err) {}
     if (t && e) {
-      userToken = t;
-      userEmail = e;
-      fetch(API + "/me", { headers: { Authorization: "Bearer " + t } })
-        .then(function (r) { return r.json(); })
-        .then(function (j) {
-          if (j.ok) { userEmail = j.email; setAuthUI(); }
-          else { clearLocal(); }
-        })
-        .catch(function () { clearLocal(); });
+      token = t; email = e;
+      apiCall("GET", "/api/profile").then(function (p) {
+        if (p.ok) { profile = p.profile; setAuthUI(); }
+        else clearSession();
+      });
     }
     setAuthUI();
   }
-  // dock 账户 / 宝箱 路由（与 fun.js 的四个按钮共存）
-  document.addEventListener("click", function (e) {
-    var b = e.target.closest(".fun-dock-btn");
-    if (!b) return;
-    var fn = b.getAttribute("data-fun");
-    if (fn === "account") {
-      if (userEmail) showAccountView(); else openAuth("login");
-    } else if (fn === "toolbox") {
-      if (userEmail) openToolbox();
-      else { toolboxPending = true; openAuth("login"); toast("登录后即可打开百宝箱", "info"); }
-    }
-  });
-  function showAccountView() {
-    if (!authBodyBox) return;
-    authBodyBox.innerHTML =
-      '<div class="account-view" style="display:grid;gap:.7rem">' +
-        '<p class="acct-mail" style="font-family:var(--font-mono);color:var(--text-soft);word-break:break-all">' + esc(userEmail || "") + "</p>" +
-        '<button class="btn btn-primary account-open-tb" type="button">打开百宝箱</button>' +
-        '<button class="btn account-logout" type="button">退出登录</button>' +
-        '<p class="auth-hint">登录状态在本浏览器保留 30 天。</p>' +
-      "</div>";
-    if (authTabsBox) authTabsBox.style.display = "none";
-    if (authTitle) authTitle.textContent = "我的账户";
-    authOverlay.hidden = false;
-    document.body.style.overflow = "hidden";
-    authBodyBox.querySelector(".account-open-tb").addEventListener("click", function () {
-      closeAuth();
-      openToolbox();
-    });
-    authBodyBox.querySelector(".account-logout").addEventListener("click", logout);
-  }
-  initAuth();
 
-  /* ---------- 让带 data-sprinkle 的区块在进入视野时触发彩花 ---------- */
-  if (revealObserver) {
-    document.querySelectorAll("[data-sprinkle]").forEach(function (el) {
-      revealObserver.observe(el);
+  /* =========================================================
+     动态（朋友圈）
+     ========================================================= */
+  var composer = document.getElementById("composer");
+  var guestHint = document.getElementById("guestHint");
+  var postText = document.getElementById("postText");
+  var postCount = document.getElementById("postCount");
+  var postSend = document.getElementById("postSend");
+  var feedEl = document.getElementById("feed");
+  var compDot = document.getElementById("compDot");
+  var compWho = document.getElementById("compWho");
+  var feedCache = [];
+
+  function renderComposer() {
+    if (!composer) return;
+    if (email) {
+      composer.hidden = false;
+      guestHint.hidden = true;
+      compDot.textContent = (profile.nick || email.slice(0, 1)).slice(0, 1).toUpperCase();
+      compWho.textContent = profile.nick || email.split("@")[0];
+    } else {
+      composer.hidden = true;
+      guestHint.hidden = false;
+    }
+  }
+  function renderFeed() {
+    if (!feedEl) return;
+    if (!feedCache.length) {
+      feedEl.innerHTML = '<p class="feed-empty">暂无动态</p>';
+      return;
+    }
+    feedEl.innerHTML = feedCache.map(function (p) {
+      var own = !!p.owner;
+      return "" +
+        '<div class="feed-item">' +
+          '<div class="fi-head"><span class="fi-ava">' + esc((p.nick || "?").slice(0, 1).toUpperCase()) + "</span>" +
+          '<span class="fi-name">' + esc(p.nick || "用户") + "</span>" +
+          '<span class="fi-time">' + esc(p.date || "") + "</span></div>" +
+          '<p class="fi-text">' + esc(p.content) + "</p>" +
+          (own ? '<button class="fi-del" data-id="' + p.id + '" type="button">删除</button>' : "") +
+        "</div>";
+    }).join("");
+    feedEl.querySelectorAll(".fi-del").forEach(function (b) {
+      b.addEventListener("click", function () {
+        apiCall("DELETE", "/api/posts", { id: parseInt(b.getAttribute("data-id"), 10) }).then(function (j) {
+          if (j.list) { feedCache = j.list; renderFeed(); renderComposer(); toast("已删除", "ok"); }
+          else toast("删除失败", "err");
+        });
+      });
     });
   }
+  function loadFeed() {
+    fetch(API + "/posts", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (j) {
+      if (j.list) { feedCache = j.list; renderFeed(); }
+    }).catch(function () {});
+  }
+  if (postText) {
+    postText.addEventListener("input", function () {
+      postCount.textContent = postText.value.length + " / 2000";
+    });
+    postSend.addEventListener("click", function () {
+      var c = (postText.value || "").trim();
+      if (!c) { toast("写点什么再发吧", "err"); return; }
+      postSend.disabled = true;
+      apiCall("POST", "/api/posts", { content: c }).then(function (j) {
+        if (j.list) {
+          postText.value = ""; postCount.textContent = "0 / 2000";
+          feedCache = j.list; renderFeed(); toast("已发布", "ok");
+        } else { toast(j.error || "发布失败", "err"); }
+      }).finally(function () { postSend.disabled = false; });
+    });
+  }
+
+  /* ---------- 启动 ---------- */
+  initSession();
+  loadFeed();
+  renderComposer();
 })();
